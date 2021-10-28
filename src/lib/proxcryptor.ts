@@ -1,4 +1,4 @@
-import imp from '../../../rust-projects/transform_recryption/wasm-code/pkg';
+import wasmWallet from '../../../rust-projects/transform_recryption/transform-encryption-wallet-wasm-bindings/pkg';
 import type { EncryptedPackage } from './types';
 
 const textEncoder = new TextEncoder();
@@ -8,26 +8,27 @@ function encodeTag(tag: string) {
 	return textEncoder.encode(tag);
 }
 
-export const wasmWallet = new Promise((resolve, reject) => {
-	imp().then((wasm) => {
+export const initialized = new Promise((resolve, reject) => {
+	wasmWallet().then((wasm) => {
 		resolve(wasm);
 	});
 });
 
+export const generate_ed25519_keypair = async () => {
+	await wasmWallet();
+	console.log({ initialized });
+	return wasmWallet.generate_ed25519_keypair();
+};
+
 export class Proxcryptor {
-	constructor() {}
-
-	async create(secret) {
-		console.log({ wasmWallet }, { imp });
-		let ctr = wasmWallet.Counter.new('b', 0);
-		console.log({ ctr });
-
-		this.prencryptor = initWasm.Proxcryptor.new(secret);
-		return;
-	}
-
-	generate() {
-		return new Uint8Array(64);
+	constructor(secret) {
+		this.ready = new Promise((resolve, reject) => {
+			initialized.then((_) => {
+				this.wasmWallet = wasmWallet;
+				this.pre = wasmWallet.Proxcryptor.new(secret);
+				resolve(true); // ready
+			});
+		});
 	}
 
 	async selfEncrypt(symmetricKey, tag) {
