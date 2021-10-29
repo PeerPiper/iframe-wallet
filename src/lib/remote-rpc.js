@@ -17,8 +17,6 @@ async function rpc(method, ...params) {
 				resolve(e.data);
 			};
 			// Transfer port2 to the iframe
-			console.log({ method, params });
-
 			iframe.contentWindow.postMessage({ method, params }, origin, [channel.port2]);
 		});
 	} catch (e) {
@@ -32,8 +30,6 @@ class RemoteRpcProxy {
 		return new Proxy(this, {
 			get(target, prop) {
 				return async function () {
-					console.log({ arguments });
-					console.log(prop, { ...arguments });
 					return await rpc(prop, ...arguments);
 				};
 			}
