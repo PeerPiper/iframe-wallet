@@ -1,8 +1,145 @@
 <script>
 	import { onMount } from 'svelte';
 	import Portal from '../../../../iframe-wallet/src/lib/Portal.svelte';
+
+	// Need these for Portal Component
+	let portal;
+	let portalLoaded = false;
+	let origin = 'http://localhost:3444';
+
+	let remoteInitialized;
+	let connected = false;
+	let reply;
+	let pre;
+	let alice_keypair;
+	let bob_keypair;
+	let em;
+	let reKey;
+	let rem;
+	let bob_decrypted;
+
+	let data = 'some data here';
+	let tag = 'a tag for it';
+
+	$: portal && console.log({ portal });
+
+	const handleInit = async () => {
+		// @ts-ignore
+		reply = await portal.initialize();
+		if (reply?.status == portal.CONSTANTS?.INITIALIZED) remoteInitialized = true;
+	};
+
+	const handleConnect = async () => {
+		// @ts-ignore
+		reply = await portal.connect();
+		if (reply.status == portal.CONSTANTS.CONNECTED) connected = true;
+	};
+
+	const handleDisconnect = async () => {
+		// @ts-ignore
+		reply = await portal.disconnect();
+		if (reply.status == portal.CONSTANTS.CONNECTED) connected = false;
+	};
+
+	const handleGenerateAlice = async () => {
+		// @ts-ignore
+		alice_keypair = await portal.generateEd25519Keypair();
+	};
+
+	const handleGenerateBob = async () => {
+		// @ts-ignore
+		bob_keypair = await portal.generateEd25519Keypair();
+	};
+
+	const handleNewProxcryptor = async (name, secretKey) => {
+		// @ts-ignore
+		pre = await portal.newProxcryptor(name, new Uint8Array(secretKey));
+	};
+
+	const handleSelfEncrypt = async (name, data, tag) => {
+		// @ts-ignore
+		em = await portal.selfEncrypt(name, data, tag);
+		console.log({ em });
+	};
+
+	const handleGenerateReKey = async (sourcePreName, targetPK, tag) => {
+		// @ts-ignore
+		reKey = await portal.generateReKey(sourcePreName, targetPK, tag);
+		console.log({ reKey });
+	};
+
+	const handleReEncrypt = async (targetPK, encrypted_message, re_key) => {
+		// @ts-ignore
+		rem = await portal.reEncrypt(targetPK, encrypted_message, re_key);
+		console.log({ rem });
+	};
+
+	const handleReDecrypt = async (pre_name, re_encrypted_message) => {
+		// @ts-ignore
+		bob_decrypted = await portal.reDecrypt(pre_name, re_encrypted_message);
+		console.log({ bob_decrypted });
+	};
 </script>
 
-<h1>iFrame Wallet Demo</h1>
+<h1>iFrame Wallet Portal Demo</h1>
 
-<Portal origin={'http://localhost:3444'} />
+<p>
+	Wallet actions with to <b>{origin}</b> embedded in iFrame:
+	<br />
+	<button disabled={!portalLoaded || remoteInitialized} on:click={handleInit}
+		>Initialize Wasm</button
+	><br />
+	<button disabled={!portalLoaded || !remoteInitialized || connected} on:click={handleConnect}
+		>Connect</button
+	><br />
+	<button disabled={!connected} on:click={handleDisconnect}>Disconnect</button><br />
+	<button disabled={!connected || alice_keypair} on:click={handleGenerateAlice}
+		>Generate Alice Keypair</button
+	><br />
+	<button disabled={!connected || bob_keypair} on:click={handleGenerateBob}
+		>Generate Bob Keypair</button
+	><br />
+	<button
+		disabled={!connected || !(alice_keypair && bob_keypair)}
+		on:click={() => handleNewProxcryptor('alice', alice_keypair.secretKey)}
+		>Create Alice Proxcryptor</button
+	><br />
+	<button
+		disabled={!connected || !(alice_keypair && bob_keypair)}
+		on:click={() => handleNewProxcryptor('bob', bob_keypair.secretKey)}
+		>Create Bob Proxcryptor</button
+	><br />
+	<button disabled={!pre} on:click={() => handleSelfEncrypt('alice', data, tag)}>SelfEncrypt</button
+	><br />
+	<button
+		disabled={!connected || !bob_keypair}
+		on:click={() => handleGenerateReKey('alice', bob_keypair.publicKey, tag)}
+		>GenerateReKey for Alice or Proxy
+	</button><br />
+	<button
+		disabled={!connected || !bob_keypair}
+		on:click={() => handleReEncrypt(bob_keypair.publicKey, em, reKey)}>ReEncrypt for Bob</button
+	><br />
+	<button disabled={!connected || !bob_keypair} on:click={() => handleReDecrypt('bob', rem)}
+		>Bob Decrypt</button
+	>
+</p>
+<Portal origin={'http://localhost:3444'} bind:portal bind:portalLoaded />
+
+<br /><br />{reply?.status ? reply.status : ''}
+<br /><br />
+Loaded: {portalLoaded}<br />
+Connected: {connected}<br />
+{#if remoteInitialized}
+	{#await remoteInitialized}
+		Awaiting remoteInitialized...
+	{:then remoteInitialized}
+		Remote Initialized.{remoteInitialized}
+	{/await}
+{/if}
+
+<style>
+	button {
+		margin: 0.25em;
+	}
+</style>
