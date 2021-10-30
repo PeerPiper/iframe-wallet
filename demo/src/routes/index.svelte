@@ -21,8 +21,6 @@
 	let data = 'some data here';
 	let tag = 'a tag for it';
 
-	$: portal && console.log({ portal });
-
 	const handleInit = async () => {
 		// @ts-ignore
 		reply = await portal.initialize();

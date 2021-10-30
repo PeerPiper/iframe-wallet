@@ -6,16 +6,16 @@
 	import { config, remote } from './remote-rpc';
 
 	// export let encrypt;
-	export let origin = 'http://localhost';
+	export let origin = 'http://localhost'; // https://wallet.peerpiper.io/ ?
 
 	export let portalLoaded = false;
 	let iframe: HTMLIFrameElement;
 
 	let mounted;
+	let initialize;
 
 	// Wait for the iframe to load
 	export const handleLoad = async () => {
-		console.log('iFrame loaded');
 		config({ iframe, origin });
 		portalLoaded = true;
 	};
@@ -26,14 +26,17 @@
 		mounted = true; // Parent needs to mount first, to ensure the iframe listener is added
 	});
 
+	// This ($:) updates portal once onMount is called, which updates { initialize: initialize() }
 	export const portal = {
 		CONSTANTS, // re-export for convenience
+		/*
+		 * Must not init in SSR with Vite
+		 */
 		initialize: async () => {
 			// @ts-ignore
 			let reply = await remote.initialize();
 			return reply;
 		},
-
 		connect: async () => {
 			// @ts-ignore
 			let reply = await remote.connect();

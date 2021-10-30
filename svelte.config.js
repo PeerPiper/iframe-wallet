@@ -1,4 +1,6 @@
 import preprocess from 'svelte-preprocess';
+import vercelAdapter from '@sveltejs/adapter-vercel';
+import staticIPFSAdapter from 'sveltejs-adapter-ipfs';
 
 /** @type {import('@sveltejs/kit').Config} */
 const config = {
@@ -12,11 +14,13 @@ const config = {
 		vite: () => ({
 			server: {
 				fs: {
-					// Allow serving files from one level up to the project root
+					// Allow serving files from levels up to the project root
 					allow: ['../../../']
 				}
 			}
-		})
+		}),
+		// adapter: staticIPFSAdapter()
+		adapter: vercelAdapter()
 	}
 };
 

@@ -1,7 +1,10 @@
 <script>
 	import { onMount } from 'svelte';
 	import * as CONSTANTS from '$lib/constants';
-	import { handlers } from '$lib/handlers';
+	import { handlers, setHost } from '$lib/handlers';
+	import { page } from '$app/stores';
+
+	setHost($page.host);
 
 	let rx;
 	let reply;
@@ -33,6 +36,7 @@
 			try {
 				let fn = handlers[method];
 				let args = params ? params : [];
+				if (method === 'connect') args = [event.origin];
 				console.log({ args });
 				const result = await fn(...args);
 				console.log({ result });
