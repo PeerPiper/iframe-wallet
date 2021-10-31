@@ -6,7 +6,7 @@
 
 	setHost($page.host);
 
-	let rx;
+	let result;
 	let reply;
 	let handleMessage;
 
@@ -36,10 +36,8 @@
 			try {
 				let fn = handlers[method];
 				let args = params ? params : [];
-				if (method === 'connect') args = [event.origin];
-				console.log({ args });
-				const result = await fn(...args);
-				console.log({ result });
+				if (method === 'connect') args = [event.origin]; // connect is the only method that needs the origin passed in? {...args, origin: event.origin}
+				result = await fn(...args);
 				reply(result);
 			} catch (error) {
 				let err = new Error(`RPC error calling ${method}(${params.toString()})`);
@@ -47,6 +45,9 @@
 				reply(err);
 			}
 		};
+
+		// let parent know this iframe is ready to initialize
+		window.parent.postMessage(`${CONSTANTS.READY}`, '*'); // window.parent
 	});
 </script>
 
@@ -57,4 +58,4 @@
 	The idea is this wallet is embedded in an iframe in the host's SubmitEvent, so the contexts are
 	different and your keys are safe.
 </p>
-{rx}
+{result?.status}
