@@ -20,7 +20,6 @@ async function initModule(viteInitModuleFunction, initFunction) {
 	const relUrl = quoteIndex !== -1 ? functionString.slice(quoteIndex + 1, -2) : functionString;
 	// this line is crucial for ssr, because node doesn't understand relative urls
 	const url = browser ? relUrl : `http://${host}` + relUrl; // TODO: find a way to derive the localhost part dynamically
-	console.log({ url });
 	return await initFunction(url);
 }
 
