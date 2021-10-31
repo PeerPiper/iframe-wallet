@@ -12,11 +12,21 @@
 	let iframe: HTMLIFrameElement;
 
 	let mounted;
-	let initialize;
 
 	// Wait for the iframe to load
 	export const handleLoad = async () => {
 		config({ iframe, origin });
+	};
+
+	const handleMessage = async (event) => {
+		if (event.data == CONSTANTS.READY) handleReady();
+	};
+
+	const handleReady = async () => {
+		// @ts-ignore
+		let reply = await remote.initialize();
+		// console.log({ initilize: reply });
+		// if (reply.status == CONSTANTS.INITIALIZED) // TODO: Implement once API stabalizes?
 		portalLoaded = true;
 	};
 
@@ -26,17 +36,8 @@
 		mounted = true; // Parent needs to mount first, to ensure the iframe listener is added
 	});
 
-	// This ($:) updates portal once onMount is called, which updates { initialize: initialize() }
 	export const portal = {
 		CONSTANTS, // re-export for convenience
-		/*
-		 * Must not init in SSR with Vite
-		 */
-		initialize: async () => {
-			// @ts-ignore
-			let reply = await remote.initialize();
-			return reply;
-		},
 		connect: async () => {
 			// @ts-ignore
 			let reply = await remote.connect();
@@ -87,6 +88,8 @@
 		}
 	};
 </script>
+
+<svelte:window on:message={handleMessage} />
 
 {#if mounted}
 	<IFrame bind:iframe src={origin} />
