@@ -8,3 +8,5 @@ export const INITIALIZE = 'INITIALIZE';
 export const INITIALIZED = 'INITIALIZED';
 
 export const ERROR_METHOD_NOT_FOUND = 'Error, method not found';
+
+export const READY = 'READY';
