@@ -1,3 +1,5 @@
+import { handlers } from './handlers';
+
 var iframe;
 var origin;
 
@@ -7,7 +9,6 @@ export function config(config) {
 }
 
 async function rpc(method, ...params) {
-	console.log(`rpc-run ${method}(${params})`);
 	try {
 		const channel = new MessageChannel();
 		return new Promise((resolve, reject) => {
@@ -27,13 +28,16 @@ async function rpc(method, ...params) {
 
 class RemoteRpcProxy {
 	constructor() {
-		return new Proxy(this, {
-			get(target, prop) {
-				return async function () {
-					return await rpc(prop, ...arguments);
-				};
+		return new Proxy(
+			handlers, // define this methods by importing from handlers
+			{
+				get(target, prop) {
+					return async function () {
+						return await rpc(prop, ...arguments);
+					};
+				}
 			}
-		});
+		);
 	}
 }
 
