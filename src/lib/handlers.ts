@@ -27,7 +27,7 @@ function assertReady() {
 	return wasmWallet && connected ? true : false;
 }
 
-export const handlers: { [Key: string]: Function } = {
+export let handlers: { [Key: string]: Function } = {
 	initialize: async () => {
 		if (!host) return new Error('Host not set. Run setHost($page.host) first.');
 		wasmWallet = await import('../../../rust-projects/transform_recryption/wasm-code/pkg');
@@ -35,11 +35,11 @@ export const handlers: { [Key: string]: Function } = {
 		return { status: CONSTANTS.INITIALIZED };
 	},
 
-	setConfig(key: string, value: any) {
+	setConfig: (key: string, value: any) => {
 		config[key] = value;
 	},
 
-	getConfig() {
+	getConfig: () => {
 		return config;
 	},
 
@@ -53,7 +53,12 @@ export const handlers: { [Key: string]: Function } = {
 		}
 	},
 
-	generate_ed25519_keypair: () => {
+	generate: (_name) => {
+		const { publicKey, secretKey } = handlers.generateEd25519Keypair();
+		return handlers.newProxcryptor(_name, secretKey);
+	},
+
+	generateEd25519Keypair: () => {
 		if (!assertReady())
 			return new Error(
 				'Wallet not connected or initialized. Run connect() and await initialize() first.'
@@ -69,10 +74,13 @@ export const handlers: { [Key: string]: Function } = {
 			return new Error(
 				'Wallet not connected or initialized. Run connect() and await initialize() first.'
 			);
-		if (!(pre && pre_name && pre.get(pre_name)))
-			return new Error('No proxy encryptor available for this name.');
 		pre.set(pre_name, wasmWallet.Proxcryptor.new(secretKey));
 		return pre_name;
+	},
+
+	getPublicKey: (name) => {
+		console.log('getting pk', name);
+		return new Uint8Array(pre.get(name).public_key());
 	},
 
 	selfEncrypt: (pre_name, data, tag) => {
@@ -118,7 +126,8 @@ export const handlers: { [Key: string]: Function } = {
 			);
 		if (!(pre && pre_name && pre.get(pre_name)))
 			return new Error('No proxy encryptor available for this name.');
-		let reDecryptedMsg = pre.get(pre_name).re_decrypt(re_encrypted_message);
-		return reDecryptedMsg; // textDecoder.decode(reDecryptedMsg);
+		let decrypted = pre.get(pre_name).re_decrypt(re_encrypted_message);
+		let textDecoder = new TextDecoder();
+		return textDecoder.decode(new Uint8Array(decrypted));
 	}
 };
