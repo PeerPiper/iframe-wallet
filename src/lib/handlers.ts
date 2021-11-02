@@ -2,10 +2,19 @@ import * as CONSTANTS from './constants';
 import mod from '../../../rust-projects/transform_recryption/wasm-code/pkg/wasm_code_bg.wasm';
 import { browser } from '$app/env';
 
+interface EncryptedMessage {
+	tag: Uint8Array;
+	encrypted_key: Uint8Array; // length = 32
+	encrypted_data: Uint8Array;
+	message_checksum: Uint8Array;
+	overall_checksum: Uint8Array;
+}
+
 let config: { [Key: string]: any } = {};
 let wasmWallet;
 let host;
 let connected = false;
+let DEFAULT_NAME = 'DEFAULT_NAME';
 
 let pre = new Map();
 
@@ -53,9 +62,9 @@ export let handlers: { [Key: string]: Function } = {
 		}
 	},
 
-	generate: (_name) => {
+	generate: (pre_name = DEFAULT_NAME) => {
 		const { publicKey, secretKey } = handlers.generateEd25519Keypair();
-		return handlers.newProxcryptor(_name, secretKey);
+		return handlers.newProxcryptor(secretKey, pre_name);
 	},
 
 	generateEd25519Keypair: () => {
@@ -69,7 +78,7 @@ export let handlers: { [Key: string]: Function } = {
 		return { publicKey, secretKey };
 	},
 
-	newProxcryptor: (pre_name, secretKey) => {
+	newProxcryptor: (secretKey, pre_name = DEFAULT_NAME) => {
 		if (!assertReady())
 			return new Error(
 				'Wallet not connected or initialized. Run connect() and await initialize() first.'
@@ -78,12 +87,19 @@ export let handlers: { [Key: string]: Function } = {
 		return pre_name;
 	},
 
+	getLoadedKeys: () => {
+		let results = [];
+		for (let name of pre.keys()) {
+			results.push({ name, publicKey: handlers.getPublicKey(name) });
+		}
+		return results;
+	},
+
 	getPublicKey: (name) => {
-		console.log('getting pk', name);
 		return new Uint8Array(pre.get(name).public_key());
 	},
 
-	selfEncrypt: (pre_name, data, tag) => {
+	selfEncrypt: (data: Uint8Array, tag: Uint8Array, pre_name: string = DEFAULT_NAME) => {
 		if (!assertReady())
 			return new Error(
 				'Wallet not connected or initialized. Run connect() and await initialize() first.'
@@ -94,7 +110,12 @@ export let handlers: { [Key: string]: Function } = {
 		return encrypted_message;
 	},
 
-	generateReKey: (pre_name, targetPublicKey, tag) => {
+	selfDecrypt: (encryptedMessage: EncryptedMessage, pre_name: string = DEFAULT_NAME) => {
+		let decrypted_message = pre.get(pre_name).self_decrypt(encryptedMessage); // data, tag
+		return decrypted_message;
+	},
+
+	generateReKey: (targetPublicKey, tag, pre_name = DEFAULT_NAME) => {
 		if (!assertReady())
 			return new Error(
 				'Wallet not connected or initialized. Run connect() and await initialize() first.'
@@ -119,7 +140,7 @@ export let handlers: { [Key: string]: Function } = {
 		return re_encrypted_message;
 	},
 
-	reDecrypt: (pre_name, re_encrypted_message) => {
+	reDecrypt: (re_encrypted_message, pre_name = DEFAULT_NAME) => {
 		if (!assertReady())
 			return new Error(
 				'Wallet not connected or initialized. Run connect() and await initialize() first.'
