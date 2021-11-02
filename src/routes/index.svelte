@@ -55,7 +55,7 @@
 
 <h1>Welcome to iFrame Wallet!</h1>
 <p>
-	The idea is this wallet is embedded in an iframe in the host's SubmitEvent, so the contexts are
-	different and your keys are safe.
+	The idea is this wallet is embedded in an iframe in the host's website, so the contexts are
+	different and keys are safe. Yet the two can talk via postMessage.
 </p>
 {result?.status}
