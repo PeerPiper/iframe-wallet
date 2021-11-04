@@ -58,7 +58,7 @@ export let handlers: { [Key: string]: Function } = {
 			const ret = { status: CONSTANTS.CONNECTED, message: 'Wallet connected!' };
 			return ret;
 		} else {
-			return { status: CONSTANTS.DISCONNECTED, message: 'Connection denied' };
+			return false // { status: CONSTANTS.DISCONNECTED, message: 'Connection denied' };
 		}
 	},
 
@@ -90,13 +90,21 @@ export let handlers: { [Key: string]: Function } = {
 	getLoadedKeys: () => {
 		let results = [];
 		for (let name of pre.keys()) {
-			results.push({ name, publicKey: handlers.getPublicKey(name) });
+			results.push({
+				name,
+				publicKey: handlers.getPublicKey(name),
+				publicKeyBase58: handlers.getPublicKeyBase58(name)
+			});
 		}
 		return results;
 	},
 
-	getPublicKey: (name) => {
+	getPublicKey: (name): Uint8Array => {
 		return new Uint8Array(pre.get(name).public_key());
+	},
+
+	getPublicKeyBase58: (name): string => {
+		return pre.get(name).public_key_base58();
 	},
 
 	selfEncrypt: (data: Uint8Array, tag: Uint8Array, pre_name: string = DEFAULT_NAME) => {
