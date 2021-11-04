@@ -10,3 +10,6 @@ export const INITIALIZED = 'INITIALIZED';
 export const ERROR_METHOD_NOT_FOUND = 'Error, method not found';
 
 export const READY = 'READY';
+
+export const EXPAND = 'EXPAND';
+export const CONTRACT = 'CONTRACT';
