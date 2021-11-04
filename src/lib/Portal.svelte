@@ -4,30 +4,38 @@
 	import IFrame from './IFrame.svelte';
 	import * as CONSTANTS from '../../../iframe-wallet/src/lib/constants';
 	import { config, remote } from './remote-rpc';
+	import Controller from './Controller.svelte';
 
 	// export let encrypt;
-	export let origin = 'http://localhost'; // https://wallet.peerpiper.io/ ?
+	export let origin = 'http://localhost:3444'; // https://wallet.peerpiper.io/ ?
 
-	export let portalLoaded = false;
+	let portalLoaded = false;
 	let iframe: HTMLIFrameElement;
-
+	let connected;
 	let mounted;
+	let expand;
+
+	// allow users to bind to the portal
+	export let portal;
+
+	let aggregated = {
+		// inherit all super from remote handlers
+		...remote,
+		CONSTANTS // re-export for convenience
+	};
+
+	// only expose the aggregated object once connected
+	$: if (connected) portal = aggregated;
 
 	// Wait for the iframe to load, then configure it
-	export const handleLoad = async () => {
+	const handleLoad = async () => {
 		config({ iframe, origin });
 	};
 
 	const handleMessage = async (event) => {
-		if (event.data == CONSTANTS.READY) handleReady();
-	};
-
-	const handleReady = async () => {
-		// @ts-ignore
-		let reply = await remote.initialize();
-		// console.log({ initilize: reply });
-		// if (reply.status == CONSTANTS.INITIALIZED) // TODO: Implement once API stabalizes?
-		portalLoaded = true;
+		if (event.data == CONSTANTS.INITIALIZED) portalLoaded = true;
+		if (event.data == CONSTANTS.EXPAND) expand(true); // modal style interaction
+		if (event.data == CONSTANTS.CONTRACT) expand(false); // modal style interaction
 	};
 
 	$: iframe && iframe.addEventListener('load', handleLoad);
@@ -35,21 +43,12 @@
 	onMount(async () => {
 		mounted = true; // Parent needs to mount first, to ensure the iframe listener is added
 	});
-
-	export const portal = {
-		// inherit all super from remote handlers
-		...remote,
-		/**
-		 * Optional: If you want to extend the inherited functions from handlers,
-		 * such as additional name (ie. in camelCase) or change the output type (Uint8Array)
-		 * call await remote.<method> below and add your functionality
-		 */
-		CONSTANTS // re-export for convenience
-	};
 </script>
 
 <svelte:window on:message={handleMessage} />
 
 {#if mounted}
-	<IFrame bind:iframe src={origin} />
+	<Controller {origin} bind:portalLoaded bind:expand portal={aggregated} bind:connected>
+		<IFrame bind:iframe {origin} />
+	</Controller>
 {/if}
