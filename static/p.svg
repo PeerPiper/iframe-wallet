@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1440" height="1440">
+  <defs/>
+  <defs>
+    <path id="a" d="M258 1321c9-304 6-917 0-1191 52-161 1082-280 1083 330 1 609-618 545-701 538-2 67-2 208 0 422-222 56-349 23-382-99z"/>
+    <path id="c" d="M1122 560c-107 223-284 293-529 209l-38 79c-1 2-4 2-5-1l-99-287c-1-5 1-11 6-13l273-106c3-1 6 2 5 5l-36 75c70 126 211 139 423 39z"/>
+    <path id="d" d="M451 447c107-223 284-292 529-209l38-78c1-3 5-2 5 0l99 288c1 5-1 10-6 12L843 567c-3 1-6-3-5-6l37-75c-71-126-212-139-424-39z"/>
+    <radialGradient id="b" cx="992.3" cy="174.2" r="1312.8" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#69ed66"/>
+      <stop offset="100%" stop-color="#279c19"/>
+    </radialGradient>
+  </defs>
+  <use fill="url(#b)" xlink:href="#a"/>
+  <use fill="#fff" xlink:href="#c"/>
+  <use fill="#fff" xlink:href="#d"/>
+</svg>
