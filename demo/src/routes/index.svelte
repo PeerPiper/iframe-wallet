@@ -1,31 +1,26 @@
 <script>
 	import { onMount } from 'svelte';
 	import Portal from '../../../../iframe-wallet/src/lib/Portal.svelte';
+	import svg from '../../../../iframe-wallet/src/lib/graphics/mini-svg-bookmark.svg';
 
 	// Need these for Portal Component
 	let portal;
 	let portalLoaded = false;
-	let origin = 'http://localhost:3444';
+	let origin = 'http://localhost:3444'; // optional to change default
 
-	let remoteInitialized;
 	let connected = false;
 	let reply;
 	let pre;
 	let alice_keypair;
 	let bob_keypair;
 	let em;
+	let dm;
 	let reKey;
 	let rem;
 	let bob_decrypted;
 
 	let data = 'some data here';
 	let tag = 'a tag for it';
-
-	const handleInit = async () => {
-		// @ts-ignore
-		reply = await portal.initialize();
-		if (reply?.status == portal.CONSTANTS?.INITIALIZED) remoteInitialized = true;
-	};
 
 	const handleConnect = async () => {
 		// @ts-ignore
@@ -51,13 +46,19 @@
 
 	const handleNewProxcryptor = async (name, secretKey) => {
 		// @ts-ignore
-		pre = await portal.newProxcryptor(name, new Uint8Array(secretKey));
+		pre = await portal.newProxcryptor(new Uint8Array(secretKey), name);
 	};
 
 	const handleSelfEncrypt = async (name, data, tag) => {
 		// @ts-ignore
-		em = await portal.selfEncrypt(name, data, tag);
+		em = await portal.selfEncrypt(data, tag, name);
 		console.log({ em });
+	};
+
+	const handleSelfDecrypt = async (name, data, tag) => {
+		// @ts-ignore
+		dm = await portal.selfDecrypt(data, name);
+		console.log({ dm });
 	};
 
 	const handleGenerateReKey = async (sourcePreName, targetPK, tag) => {
@@ -79,17 +80,14 @@
 	};
 </script>
 
+<img src={svg} alt="SolBlog" class="tab" />
+
 <h1>iFrame Wallet Portal Demo</h1>
 
 <p>
 	Wallet actions with to <b>{origin}</b> embedded in iFrame:
 	<br />
-	<button disabled={!portalLoaded || remoteInitialized} on:click={handleInit}
-		>Initialize Wasm</button
-	><br />
-	<button disabled={!portalLoaded || !remoteInitialized || connected} on:click={handleConnect}
-		>Connect</button
-	><br />
+	<button disabled={!portalLoaded || connected} on:click={handleConnect}>Connect</button><br />
 	<button disabled={!connected} on:click={handleDisconnect}>Disconnect</button><br />
 	<button disabled={!connected || alice_keypair} on:click={handleGenerateAlice}
 		>Generate Alice Keypair</button
@@ -109,6 +107,8 @@
 	><br />
 	<button disabled={!pre} on:click={() => handleSelfEncrypt('alice', data, tag)}>SelfEncrypt</button
 	><br />
+	<button disabled={!pre} on:click={() => handleSelfDecrypt('alice', data, tag)}>SelfDecrypt</button
+	><br />
 	<button
 		disabled={!connected || !bob_keypair}
 		on:click={() => handleGenerateReKey('alice', bob_keypair.publicKey, tag)}
@@ -122,22 +122,27 @@
 		>Bob Decrypt</button
 	>
 </p>
-<Portal origin={'http://localhost:3444'} bind:portal bind:portalLoaded />
+<Portal {origin} bind:portal bind:portalLoaded />
 
 <br /><br />{reply?.status ? reply.status : ''}
 <br /><br />
 Loaded: {portalLoaded}<br />
 Connected: {connected}<br />
-{#if remoteInitialized}
-	{#await remoteInitialized}
-		Awaiting remoteInitialized...
-	{:then remoteInitialized}
-		Remote Initialized.{remoteInitialized}
-	{/await}
-{/if}
 
 <style>
 	button {
 		margin: 0.25em;
+	}
+	.tab {
+		position: fixed;
+		top: -1px;
+		right: 2%;
+		display: flex;
+		flex-direction: column;
+		padding: 1px;
+		-webkit-border-radius: 4px;
+		-moz-border-radius: 4px;
+		border-radius: 4px;
+		z-index: 99 !important;
 	}
 </style>

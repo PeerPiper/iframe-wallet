@@ -1,6 +1,7 @@
 <script>
-	import { quintOut } from 'svelte/easing';
+	import { elasticOut, quintOut } from 'svelte/easing';
 	import { tweened } from 'svelte/motion';
+	import { scale, slide } from 'svelte/transition';
 
 	export let origin;
 	export let portalLoaded = false;
@@ -31,25 +32,24 @@
 	let easing = quintOut;
 
 	// interpolate the dimensions
-	const width = tweened(intial, {
+	const minWidth = tweened(intial, {
 		duration,
 		easing
 	});
 
-	const height = tweened(intial, {
+	const minHeight = tweened(intial, {
 		duration,
 		easing
 	});
 
 	// trigger when expand toggles
 	export const expand = (opening) => {
-		opacity = opening ? 90 : 32;
-		$width = opening ? 80 : intial;
-		$height = opening ? 50 : intial;
+		opacity = opening ? 50 : 30; // change overlay opacity when expanded?
+		$minWidth = opening ? 80 : intial;
+		$minHeight = opening ? 50 : intial;
 	};
 
 	const handleConnect = async () => {
-		// @ts-ignore
 		loading = portal.connect().then(async (r) => {
 			loading = null;
 			console.log({ r });
@@ -62,44 +62,65 @@
 	};
 
 	const handleDisconnect = async () => {
-		// @ts-ignore
 		portal.disconnect().then((reply) => {
-			if (reply.status == portal.CONSTANTS.CONNECTED) connected = false;
+			if (reply.status == portal.CONSTANTS.DISCONNECTED) connected = false;
 		});
 	};
 </script>
 
 <div
 	class="container"
-	style="--container-min-width: {$width}%;--container-min-height: {$height}%;--opacity: {opacity}%;"
+	style="--container-min-width: {$minWidth}%;--container-min-height: {$minHeight}%;--opacity: {opacity}%;"
 >
 	<div class="inner-container" bind:offsetWidth bind:offsetHeight>
 		<small><a href={origin} target="_blank" rel="noreferrer">Open in new window ↗️</a></small>
 		{#if !connected}
-			<div class="header">
-				<b>PeerPiper Portal Keychain 🕳️🔑</b>
-				<input bind:value={origin} />
+			<!-- completely gratuitous transitions -->
+			<div
+				out:slide={{
+					duration,
+					delay: duration,
+					easing: elasticOut
+				}}
+				in:scale={{
+					duration,
+					delay: duration,
+					easing: elasticOut
+				}}
+			>
+				<div class="header">
+					<b>PeerPiper Portal Keychain 🕳️🔑</b>
+					<input bind:value={origin} />
+				</div>
+				<button
+					disabled={!portalLoaded || connected}
+					class={!portalLoaded ? 'red' : loading ? 'yellow' : 'ready'}
+					on:click|preventDefault={handleConnect}>Connect</button
+				><br />
 			</div>
-			<button
-				disabled={!portalLoaded || connected}
-				class={!portalLoaded ? 'red' : loading ? 'yellow' : 'ready'}
-				on:click|preventDefault={handleConnect}>Connect</button
-			><br />
 		{:else}
-			<button disabled={!connected} class="ready" on:click|preventDefault={handleDisconnect}
-				>Disconnect from
-				{shortKey}
-			</button><br />
+			<!-- completely gratuitous transitions -->
+			<div
+				transition:scale={{
+					duration,
+					delay: duration,
+					easing: elasticOut
+				}}
+			>
+				<button disabled={!connected} class="ready" on:click|preventDefault={handleDisconnect}
+					>Disconnect from
+					{shortKey}
+				</button><br />
+			</div>
 		{/if}
 
 		<!-- iframe slot -->
-		<div>
+		<div name="iframe-slot">
 			<slot />
 		</div>
-
 		<small>
-			<p>size: {offsetWidth}px x {offsetHeight}px</p>
-			<p>min-size: {$width}% x {$height}%</p>
+			<span>size: {offsetWidth}px x {offsetHeight}px</span><br />
+			<span>min-size: {$minWidth}% x {$minHeight}%</span>
 		</small>
 	</div>
 </div>
