@@ -1,38 +1,57 @@
-# create-svelte
+# iFrame Wallet
 
-Everything you need to build a Svelte project, powered by [`create-svelte`](https://github.com/sveltejs/kit/tree/master/packages/create-svelte);
+This is a cryptographic wallet itended to be embedded in an iFrame in the parent website (as opposed to the typical way that it's in a browser extension).
 
-## Creating a project
+## Background
 
-If you're seeing this, you've probably already done this step. Congrats!
+When a wallet is in a browser extension, there are many use restrictions for developers and barriers to entry for new userss:
 
-```bash
-# create a new project in the current directory
-npm init svelte@next
+Developers must
 
-# create a new project in my-app
-npm init svelte@next my-app
+- work around extension globals injected
+- itegrate each wallet
+- only offer a finite number of wallet options to their users
+- more integration work when a new wallet if offered
+- there are too many wallet options to consider
+
+Users must
+
+- have a browser that can be extended (no mobile?)
+- must want to download & install
+- actually download and install
+- choose only from app-chosen wallets instead of their own
+- work within the chosen wallet capabilities
+
+So since we have barriers to adoption and dev limitations, we can look at another way.
+
+What if the wallet was just a website? Not just any website, but a website that:
+
+- with miminal or zero javascript dependencies (to minimize XSS risk)
+- configurable, so user could choose to use their own wallet
+- hostable from content verifiable sources, such as IPFS
+- hostable from sandboxable sources, such as Deno
+- Zero barrier to entry
+- Portable to mobile
+- extensible by devs and users
+
+Then perhaps we could have greater adoption and get this Web3 thing really rolling?
+
+## Install
+
+```
+npm install @douganderson444/iframe-wallet
 ```
 
-> Note: the `@next` is temporary
+## Usage
 
-## Developing
-
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
-
-```bash
+```
 npm run dev
-
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
 ```
 
-## Building
+## Contributing
 
-Before creating a production version of your app, install an [adapter](https://kit.svelte.dev/docs#adapters) for your target environment. Then:
+Don't add any JavaScript dependencies, we're trying to minimize any chance of attacks. Otherwise Issues and PRs accepted.
 
-```bash
-npm run build
-```
+## License
 
-> You can preview the built app with `npm run preview`, regardless of whether you installed an adapter. This should _not_ be used to serve your app in production.
+MIT with Commons Clause © DougAnderson444
