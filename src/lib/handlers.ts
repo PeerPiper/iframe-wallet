@@ -1,6 +1,8 @@
 import * as CONSTANTS from './constants';
-import mod from '../../../rust-projects/transform_recryption/wasm-code/pkg/wasm_code_bg.wasm';
+import mod from '$lib/wasm/pkg/wasm_code_bg.wasm';
 import { browser } from '$app/env';
+
+const textDecoder = new TextDecoder();
 
 interface EncryptedMessage {
 	tag: Uint8Array;
@@ -39,7 +41,7 @@ function assertReady() {
 export let handlers: { [Key: string]: Function } = {
 	initialize: async () => {
 		if (!host) return new Error('Host not set. Run setHost($page.host) first.');
-		wasmWallet = await import('../../../rust-projects/transform_recryption/wasm-code/pkg');
+		wasmWallet = await import('$lib/wasm/pkg');
 		await initModule(mod, wasmWallet.default);
 		return { status: CONSTANTS.INITIALIZED };
 	},
@@ -58,8 +60,14 @@ export let handlers: { [Key: string]: Function } = {
 			const ret = { status: CONSTANTS.CONNECTED, message: 'Wallet connected!' };
 			return ret;
 		} else {
-			return false // { status: CONSTANTS.DISCONNECTED, message: 'Connection denied' };
+			return false; // { status: CONSTANTS.DISCONNECTED, message: 'Connection denied' };
 		}
+	},
+
+	disconnect: () => {
+		connected = false;
+		const ret = { status: CONSTANTS.DISCONNECTED, message: 'Wallet disconnected!' };
+		return ret;
 	},
 
 	generate: (pre_name = DEFAULT_NAME) => {
@@ -119,8 +127,16 @@ export let handlers: { [Key: string]: Function } = {
 	},
 
 	selfDecrypt: (encryptedMessage: EncryptedMessage, pre_name: string = DEFAULT_NAME) => {
-		let decrypted_message = pre.get(pre_name).self_decrypt(encryptedMessage); // data, tag
-		return decrypted_message;
+		if (
+			window.confirm(
+				`Authorize ${origin} to decrypt ${textDecoder.decode(
+					new Uint8Array(encryptedMessage.tag)
+				)}?`
+			)
+		) {
+			let decrypted_message = pre.get(pre_name).self_decrypt(encryptedMessage); // data, tag
+			return decrypted_message;
+		}
 	},
 
 	generateReKey: (targetPublicKey, tag, pre_name = DEFAULT_NAME) => {

@@ -12,7 +12,6 @@
 	let keys;
 	let handleMessage;
 	let handleGenerateKeypair;
-	let handleConnect;
 	let connected;
 	let parsedStore;
 	let isTopWindow;
@@ -28,21 +27,20 @@
 		const { ImmortalDB } = await import('immortal-db');
 		const storedValue = await ImmortalDB.get(SAVED_KEY, def);
 
-		handleConnect = () => {
+		function handleConnect() {
 			console.log('Handling connect');
 			connected = true;
 
 			if (storedValue) {
 				parsedStore = new Uint8Array(Object.values(JSON.parse(storedValue)));
 				let pre_name = handlers.newProxcryptor(parsedStore);
-				console.log({ pre_name });
+				// console.log({ pre_name }); // default for now
 				keys = handlers.getLoadedKeys();
-				console.log({ keys });
 			}
 
 			console.log(`Replying ${CONSTANTS.CONTRACT}`);
 			window.parent.postMessage(`${CONSTANTS.CONTRACT}`, '*');
-		};
+		}
 
 		handleGenerateKeypair = () => {
 			console.log('Generating keypair');
@@ -104,23 +102,26 @@
 </script>
 
 <svelte:window on:message={handleMessage} />
-<h2>Custom Graphic? 🕳️🔑</h2>
 
-{#if isTopWindow && isTopWindow() && handleGenerateKeypair}
-	<h2>PeerPiper Portal Keychain</h2>
-	<p>
-		This wallet is embedded in an iframe in the host's website, so the contexts are different and
-		keys are safe. Yet the two can talk via postMessage to encrypt & sign with your keys.
-	</p>
-	{#if connected && !keys}
-		<button class={'green'} on:click={handleGenerateKeypair}>Create New Keypair</button>
+<main>
+	<h2>Custom Graphic? 🕳️🔑</h2>
+
+	{#if isTopWindow && isTopWindow() && handleGenerateKeypair}
+		<h2>PeerPiper Portal Keychain</h2>
+		<p>
+			This wallet is embedded in an iframe in the host's website, so the contexts are different and
+			keys are safe. Yet the two can talk via postMessage to encrypt & sign with your keys.
+		</p>
+		{#if connected && !keys}
+			<button class={'green'} on:click={handleGenerateKeypair}>Create New Keypair</button>
+		{/if}
+		{#if keys}
+			{#each keys as key}
+				Connected to <b>{key.publicKeyBase58}</b>
+			{/each}
+		{/if}
 	{/if}
-	{#if keys}
-		{#each keys as key}
-			Connected to <b>{key.publicKeyBase58}</b>
-		{/each}
-	{/if}
-{/if}
+</main>
 
 <style>
 	/* div.attention {
