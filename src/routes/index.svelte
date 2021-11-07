@@ -104,10 +104,9 @@
 <svelte:window on:message={handleMessage} />
 
 <main>
-	<h2>Custom Graphic? 🕳️🔑</h2>
+	<h2>PeerPiper Portal Keychain 🕳️🔑</h2>
 
 	{#if isTopWindow && isTopWindow() && handleGenerateKeypair}
-		<h2>PeerPiper Portal Keychain</h2>
 		<p>
 			This wallet is embedded in an iframe in the host's website, so the contexts are different and
 			keys are safe. Yet the two can talk via postMessage to encrypt & sign with your keys.

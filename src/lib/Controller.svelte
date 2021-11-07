@@ -1,4 +1,5 @@
 <script>
+	import { onMount } from 'svelte';
 	import { elasticOut, quintOut } from 'svelte/easing';
 	import { tweened } from 'svelte/motion';
 	import { scale, slide } from 'svelte/transition';
@@ -8,13 +9,16 @@
 	export let portal;
 	export let connected;
 
-	let loading;
+	let connecting;
 	let keys;
+	let stayConnected;
 
 	let offsetWidth;
 	let offsetHeight;
 
-	let opacity = 32; // percent
+	let closedOpacity = 15;
+	let openedOpacity = 30;
+	let opacity = closedOpacity; // percent
 
 	$: shortKey =
 		keys && keys.length > 0
@@ -27,7 +31,7 @@
 			: 'sk';
 
 	// modal params
-	let intial = 20;
+	let intial = 20; // width/height percentage
 	let duration = 750;
 	let easing = quintOut;
 
@@ -44,28 +48,33 @@
 
 	// trigger when expand toggles
 	export const expand = (opening) => {
-		opacity = opening ? 50 : 30; // change overlay opacity when expanded?
+		opacity = opening ? openedOpacity : closedOpacity; // change overlay opacity when expanded?
 		$minWidth = opening ? 80 : intial;
 		$minHeight = opening ? 50 : intial;
 	};
 
 	const handleConnect = async () => {
-		loading = portal.connect().then(async (r) => {
-			loading = null;
-			console.log({ r });
-			if (r.status == portal.CONSTANTS.CONNECTED) {
-				console.log({ r });
-				connected = true;
+		connecting = portal.connect().then(async (r) => {
+			connecting = null;
+			if (r.status !== portal.CONSTANTS.CONNECTED) return;
+			connected = true;
+			if (stayConnected) {
+				portal.stayConnected(); // set flag on remote
+				window.sessionStorage.setItem('stayConnected', 'true'); // set flag local to autoconnect
 			}
 			keys = await portal.getLoadedKeys();
 		});
 	};
 
 	const handleDisconnect = async () => {
+		window.sessionStorage.removeItem('stayConnected');
 		portal.disconnect().then((reply) => {
 			if (reply.status == portal.CONSTANTS.DISCONNECTED) connected = false;
 		});
 	};
+
+	//check auto connect
+	$: if (portalLoaded && sessionStorage.getItem('stayConnected') == 'true') handleConnect();
 </script>
 
 <div
@@ -89,14 +98,15 @@
 				}}
 			>
 				<div class="header">
-					<b>PeerPiper Portal Keychain 🕳️🔑</b>
 					<input bind:value={origin} />
 				</div>
 				<button
 					disabled={!portalLoaded || connected}
-					class={!portalLoaded ? 'red' : loading ? 'yellow' : 'ready'}
-					on:click|preventDefault={handleConnect}>Connect</button
+					class={!portalLoaded ? 'red' : connecting ? 'yellow' : 'ready'}
+					on:click|preventDefault={handleConnect}
+					>{!portalLoaded ? 'Loading...' : connecting ? 'Connecting' : 'Connect'}</button
 				><br />
+				<input type="checkbox" bind:checked={stayConnected} /> Stay Connected
 			</div>
 		{:else}
 			<!-- completely gratuitous transitions -->
@@ -116,12 +126,8 @@
 
 		<!-- iframe slot -->
 		<div name="iframe-slot">
-			<slot />
+			<slot {stayConnected} />
 		</div>
-		<small>
-			<span>size: {offsetWidth}px x {offsetHeight}px</span><br />
-			<span>min-size: {$minWidth}% x {$minHeight}%</span>
-		</small>
 	</div>
 </div>
 
@@ -178,7 +184,7 @@
 		background-color: #4caf50;
 	}
 	button.yellow {
-		background-color: rgb(230, 208, 10, var(--opacity));
+		background-color: rgb(230, 208, 10, 0.8);
 	}
 	button.ready {
 		background-color: rgb(47, 137, 255);

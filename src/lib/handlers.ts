@@ -17,6 +17,7 @@ let wasmWallet;
 let host;
 let connected = false;
 let DEFAULT_NAME = 'DEFAULT_NAME';
+const stayConnected = 'stayConnected';
 
 let pre = new Map();
 
@@ -55,7 +56,10 @@ export let handlers: { [Key: string]: Function } = {
 	},
 
 	connect: (origin) => {
-		if (window.confirm(`Authorize ${origin} to connect to your wallet?`)) {
+		if (
+			sessionStorage.getItem(stayConnected) == 'true' ||
+			window.confirm(`Authorize ${origin} to connect to your wallet?`)
+		) {
 			connected = true;
 			const ret = { status: CONSTANTS.CONNECTED, message: 'Wallet connected!' };
 			return ret;
@@ -64,8 +68,13 @@ export let handlers: { [Key: string]: Function } = {
 		}
 	},
 
+	stayConnected: () => {
+		window.sessionStorage.setItem(stayConnected, 'true');
+	},
+
 	disconnect: () => {
 		connected = false;
+		window.sessionStorage.removeItem(stayConnected);
 		const ret = { status: CONSTANTS.DISCONNECTED, message: 'Wallet disconnected!' };
 		return ret;
 	},
@@ -129,9 +138,7 @@ export let handlers: { [Key: string]: Function } = {
 	selfDecrypt: (encryptedMessage: EncryptedMessage, pre_name: string = DEFAULT_NAME) => {
 		if (
 			window.confirm(
-				`Authorize ${origin} to decrypt ${textDecoder.decode(
-					new Uint8Array(encryptedMessage.tag)
-				)}?`
+				`Authorize site to decrypt ${textDecoder.decode(new Uint8Array(encryptedMessage.tag))}?`
 			)
 		) {
 			let decrypted_message = pre.get(pre_name).self_decrypt(encryptedMessage); // data, tag
