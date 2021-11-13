@@ -48,6 +48,33 @@ npm install @douganderson444/iframe-wallet
 npm run dev
 ```
 
+## Dev Notes
+
+To add a confirmation to a crypto method handler:
+
+```js
+let confirmed = await get(confirm)('<this.method.name.path>', origin);
+```
+
+Where `<this.method.name.path>` is something like `'connect'` or `'sign'`.
+
+To add a custom confirmation component:
+
+1. Create the custom component
+2. Wrap Custom component in `$lib/handlers/DefaultConfirmation.svelte`
+3. Import the Custom Confirm component and inject logic to `src\lib\handlers\confirm\index.ts`
+
+```js
+let customizedComponents = {
+	connect: { component: Connect }  // existing custom confirm component
+	<namespce>: {
+		<methodName>: {
+			component: <CustomComponentName>
+		}
+	}
+};
+```
+
 ## Contributing
 
 Don't add any JavaScript dependencies, we're trying to minimize any chance of attacks. Otherwise Issues and PRs accepted.
