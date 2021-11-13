@@ -14,14 +14,17 @@
 	let offsetWidth;
 	let offsetHeight;
 
+	const leaf = (obj, path) => path.split('.').reduce((value, el) => value && value[el], obj);
+
 	let active; // active confirmation UI component
-	$: active = confirmationComponents[$confirmSection] || false; // picked by $confirm fn below
+	// $: active = confirmationComponents[$confirmSection] || false; // picked by $confirm fn below
+	$: active = $confirmSection ? leaf(confirmationComponents, $confirmSection) : false; // picked by $confirm fn below
 
 	let handleConfirmed;
 	let handleDenied;
 
 	// set confirm fn
-	$confirm = async (methodName, origin) => {
+	$confirm = async (methodName, params) => {
 		$confirmSection = methodName;
 		return new Promise((resolve, reject) => {
 			handleConfirmed = () => {
@@ -76,7 +79,6 @@
 				handlers.importKeypairs(kps);
 				$keypairs = $keypairs;
 			}
-			window.parent.postMessage(`${CONSTANTS.CONTRACT}`, '*');
 		}
 
 		handleGenerateKeypair = async () => {
@@ -166,6 +168,7 @@
 	});
 </script>
 
+active: {active}
 <svelte:window on:message={handleMessage} />
 
 <main bind:offsetWidth bind:offsetHeight>
