@@ -125,146 +125,50 @@ export const arweaveWalletAPI = {
 		}
 	},
 	async getActivePublicKey() {
-		try {
-			const data = await callAPI({
-				type: 'get_active_public_key',
-				ext: 'arconnect',
-				sender: 'api'
-			});
-			if (!data.res) throw new Error(data.message);
-
-			return data.publicKey as string;
-		} catch (e) {
-			throw new Error(e);
-		}
+		// TODO
 	},
 	async getAllAddresses() {
-		try {
-			const data = await callAPI({
-				type: 'get_all_addresses',
-				ext: 'arconnect',
-				sender: 'api'
-			});
-			if (!data.res) throw new Error(data.message);
-
-			return data.addresses as string[];
-		} catch (e) {
-			throw new Error(e);
-		}
+		// TODO
 	},
 	async getWalletNames(): Promise<{ [addr: string]: string }> {
-		try {
-			const data = await callAPI({
-				type: 'get_wallet_names',
-				ext: 'arconnect',
-				sender: 'api'
-			});
-			if (!data.res) throw new Error(data.message);
-
-			return data.names;
-		} catch (e) {
-			throw new Error(e);
-		}
+		// TODO
 	},
 	async addToken(id: string): Promise<void> {
-		try {
-			const data = await callAPI({
-				type: 'add_token',
-				ext: 'arconnect',
-				sender: 'api',
-				id
-			});
-			if (!data.res) throw new Error(data.message);
-		} catch (e) {
-			throw new Error(e);
-		}
+		// TODO
 	},
 	async sign(params): Promise<Signature> {
 		console.log(`sign with params`, { params });
 		// TODO: confirm
+
+		let confirmed = await get(confirm)('arweaveWalletAPI.sign', params.dataToSign);
+		if (!confirmed) return false;
+
 		const address = await arweaveWalletAPI.getActiveAddress();
 		// get keys
 		let jwk;
 		const kp = get(keypairs); // svelte stores
 
-		console.log({ kp });
-
 		// find the RSA key
-		// kp.forEach(async (value, key, map) => {
-		// 	if (value.kty == 'RSA' && addr == address) {
-		// 		const addr = await ownerToAddress(value.n);
-		// 		console.log({ addr });
-		// 		console.log('match');
-		// 		jwk = value;
-		// 	}
-		// });
-		// for (let [k, value] of kp.entries()) {
-		// 	if (k.kty == 'RSA') {
-		// 		const addr = await ownerToAddress(k.n);
-		// 		console.log({ addr });
-		// 		if (addr == address) {
-		// 			console.log('match');
-		// 			jwk = value;
-		// 		}
-		// 	}
-		// }
 		await Promise.all(
 			[...kp].map(async ([k, value]) => {
-				console.log({ k }, { value });
-				console.log('value?.kty', value?.kty, value?.kty === 'RSA');
 				if (value?.kty === 'RSA') {
 					const addr = await ownerToAddress(value.n);
-					console.log({ addr });
 					if (addr == address) {
-						console.log('match');
 						jwk = value;
 					}
 				}
 			})
 		);
 		// pull out RSA matching jwk.n
-		console.log('using jwk ', { jwk });
 		const rawSig = await subtleSign(jwk, params.dataToSign);
 		return rawSig;
-		// const arweave = new Arweave({
-		// 	host: 'arweave.net',
-		// 	port: 443,
-		// 	protocol: 'https'
-		// });
-		// try {
-		// 	const data = await callAPI({
-		// 		type: 'sign_transaction',
-		// 		ext: 'arconnect',
-		// 		sender: 'api',
-		// 		transaction,
-		// 		signatureOptions: options
-		// 	});
-		// 	if (!data.res || !data.transaction) throw new Error(data.message);
-		// 	const decodeTransaction = arweave.transactions.fromRaw(data.transaction);
-		// 	if (data.arConfetti) {
-		// 		for (let i = 0; i < 8; i++) setTimeout(() => createCoinWithAnimation(), i * 150);
-		// 	}
-		// 	return decodeTransaction;
-		// } catch (e) {
-		// 	throw new Error(e);
-		// }
 	},
 	async getPermissions(): Promise<PermissionType[]> {
 		const permissions: PermissionType[] = storedPermissions;
 		return permissions;
 	},
 	async getArweaveConfig(): Promise<IArweave> {
-		try {
-			const data = await callAPI({
-				type: 'get_arweave_config',
-				ext: 'arconnect',
-				sender: 'api'
-			});
-			if (!data.config) throw new Error(data.message);
-			return data.config;
-		} catch (e) {
-			throw new Error(e);
-		}
+		// TODO
 	},
 	async encrypt(
 		data: string,
@@ -274,19 +178,7 @@ export const arweaveWalletAPI = {
 			salt?: string;
 		}
 	): Promise<Uint8Array> {
-		try {
-			const result = await callAPI({
-				type: 'encrypt',
-				ext: 'arconnect',
-				sender: 'api',
-				data,
-				options
-			});
-			if (!result.res || !result.data) throw new Error(result.message);
-			return new Uint8Array(Object.values(result.data));
-		} catch (e) {
-			throw new Error(e);
-		}
+		// TODO
 	},
 	async decrypt(
 		data: Uint8Array,
@@ -296,34 +188,10 @@ export const arweaveWalletAPI = {
 			salt?: string;
 		}
 	): Promise<string> {
-		try {
-			const result = await callAPI({
-				type: 'decrypt',
-				ext: 'arconnect',
-				sender: 'api',
-				data,
-				options
-			});
-			if (!result.res || !result.data) throw new Error(result.message);
-			return result.data;
-		} catch (e) {
-			throw new Error(e);
-		}
+		// TODO
 	},
 	async signature(data: Uint8Array, algorithm: any): Promise<string> {
-		try {
-			const result = await callAPI({
-				type: 'signature',
-				ext: 'arconnect',
-				sender: 'api',
-				data,
-				options: algorithm
-			});
-			if (!result.res || !result.data) throw new Error(result.message);
-			return result.data;
-		} catch (e) {
-			throw new Error(e);
-		}
+		// TODO
 	}
 };
 

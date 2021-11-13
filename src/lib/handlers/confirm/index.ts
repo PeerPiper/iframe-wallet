@@ -1,6 +1,7 @@
 import { handlers } from '../';
 import DefaultConfirmation from './DefaultConfirmation.svelte';
 import Connect from './Connect.svelte';
+import ArweaveSign from '../arweave/ConfirmSign.svelte';
 
 let confirmationComponents = {
 	// Splash: { component: Splash },
@@ -12,7 +13,14 @@ for (const [key, value] of Object.entries(handlers)) {
 }
 
 // Customize certain confirmation components
-let customizedComponents = { connect: { component: Connect } };
+let customizedComponents = {
+	connect: { component: Connect },
+	arweaveWalletAPI: {
+		sign: {
+			component: ArweaveSign
+		}
+	}
+};
 
 confirmationComponents = { ...confirmationComponents, ...customizedComponents };
 
