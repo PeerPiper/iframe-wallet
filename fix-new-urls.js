@@ -19,8 +19,5 @@ const fileName = path.resolve(`${__dirname}${SLASH}${p}`);
 const re = /[^\n]*new URL[^\n]*/g;
 
 try {
-	writeFileSync(
-		fileName,
-		readFileSync(fileName, 'utf8').replace(re, `input = "./wasm_code_bg.wasm" `)
-	);
+	writeFileSync(fileName, readFileSync(fileName, 'utf8').replace(re, ''));
 } catch {}

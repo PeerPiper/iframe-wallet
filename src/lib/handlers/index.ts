@@ -2,6 +2,18 @@ import * as CONSTANTS from './constants';
 import mod from '$lib/wasm/pkg/wasm_code_bg.wasm';
 import { browser } from '$app/env';
 
+// import plugins
+import { ed25519 } from './ed25519';
+import { rsa } from './rsa';
+import { arweaveWalletAPI } from './arweave';
+
+// Svelte stuff
+import { tick } from 'svelte';
+import { confirm, keypairs } from '../stores';
+import { get } from 'svelte/store';
+
+import { privateKeyJwkFromEd25519bytes, jwkToSecretBytes } from './ed25519/utils';
+
 const textDecoder = new TextDecoder();
 
 interface EncryptedMessage {
@@ -20,6 +32,7 @@ let DEFAULT_NAME = 'DEFAULT_NAME';
 const stayConnected = 'stayConnected';
 
 let pre = new Map();
+let keys = new Map();
 
 export const setHost = (h) => {
 	host = h;
@@ -55,16 +68,19 @@ export let handlers: { [Key: string]: Function } = {
 		return config;
 	},
 
-	connect: (origin) => {
-		if (
-			sessionStorage.getItem(stayConnected) == 'true' ||
-			window.confirm(`Authorize ${origin} to connect to your wallet?`)
-		) {
+	connectWallet: async (origin) => {
+		try {
+			// get confirm from svelte stores /  { get } from 'svelte/store';
+			let confirmed =
+				sessionStorage.getItem(stayConnected) == 'true' || (await get(confirm)('connect', origin));
+			console.log({ confirmed }, sessionStorage.getItem(stayConnected));
+			if (!confirmed) return false;
 			connected = true;
 			const ret = { status: CONSTANTS.CONNECTED, message: 'Wallet connected!' };
 			return ret;
-		} else {
-			return false; // { status: CONSTANTS.DISCONNECTED, message: 'Connection denied' };
+		} catch (error) {
+			console.warn('connect error');
+			return false; // alternatively: { status: CONSTANTS.DISCONNECTED, message: 'Connection denied' };
 		}
 	},
 
@@ -104,16 +120,56 @@ export let handlers: { [Key: string]: Function } = {
 		return pre_name;
 	},
 
+	importKeypairs: (imports: Array) => {
+		// TODO password protect
+		// foreach keypair, sort by key type (RSA, ed25519) and laod 'em up'
+		imports.forEach((imported) => {
+			const kp = get(keypairs); // get keypairs from svelte stores manually since this is not a svelte file
+			kp.set(imported.kid, imported); // save in the map
+
+			if (imported.crv == 'Ed25519') {
+				// convert from JWK to bytes
+				const bytes = jwkToSecretBytes(imported);
+				handlers.newProxcryptor(bytes);
+			}
+			if (imported.kty == 'RSA') {
+				// convert to publicJWK?
+			}
+		});
+	},
 	getLoadedKeys: () => {
+		console.log('Getting loaded keys');
 		let results = [];
-		for (let name of pre.keys()) {
-			results.push({
-				name,
-				publicKey: handlers.getPublicKey(name),
-				publicKeyBase58: handlers.getPublicKeyBase58(name)
-			});
-		}
+		// for (let name of pre.keys()) {
+		// 	results.push({
+		// 		name,
+		// 		publicKey: handlers.getPublicKey(name),
+		// 		publicKeyBase58: handlers.getPublicKeyBase58(name)
+		// 	});
+		// }
+		get(keypairs).forEach((value, key, map) => {
+			if (value.crv == 'Ed25519') {
+				const copy = { ...value };
+				delete copy.d; // delete secret key portion
+				results.push(copy);
+			}
+			if (value.kty == 'RSA') {
+				const jwk = { ...value };
+				delete jwk.d; // RSA secret exponent d
+				delete jwk.p; // RSA secret prime p
+				delete jwk.q; // RSA secret prime q with p < q
+				delete jwk.dp;
+				delete jwk.dq;
+				delete jwk.qi;
+				results.push(jwk);
+			}
+		});
 		return results;
+	},
+
+	// returns a list of JWK publicKeys for the wallet
+	getKeys: () => {
+		return keys;
 	},
 
 	getPublicKey: (name): Uint8Array => {
@@ -181,5 +237,6 @@ export let handlers: { [Key: string]: Function } = {
 		let decrypted = pre.get(pre_name).re_decrypt(re_encrypted_message);
 		let textDecoder = new TextDecoder();
 		return textDecoder.decode(new Uint8Array(decrypted));
-	}
+	},
+	arweaveWalletAPI
 };

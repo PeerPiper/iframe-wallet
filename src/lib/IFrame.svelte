@@ -1,14 +1,48 @@
 <script>
+	import { tweened } from 'svelte/motion';
+	import { elasticOut, quintOut } from 'svelte/easing';
+
 	export let iframe;
 	export let origin; // iframe src
+
+	export let offsetWidth;
+	export let offsetHeight;
+
+	let duration = 400;
+	let easing = quintOut;
+
+	// interpolate the dimensions
+	const calcWidth = tweened(null, {
+		duration,
+		easing
+	});
+
+	// interpolate the dimensions
+	const calcHeight = tweened(null, {
+		duration,
+		easing
+	});
+
+	$: if (offsetHeight || offsetWidth) updateDimensions();
+
+	function updateDimensions() {
+		$calcWidth = offsetWidth; // tweening will make this transition instead of jump for us
+		$calcHeight = offsetHeight;
+	}
 </script>
 
-<div class="iframe-container">
-	<div class="iframe-inner">
-		<iframe title="Web Wallet" bind:this={iframe} src={origin} />
-	</div>
-</div>
+<!-- <div class="iframe-container"> -->
+<!-- iframe: {offsetWidth} x {offsetHeight}<br /> -->
+<!-- iframeCalc: {$calcWidth} x {$calcHeight}<br /> -->
+<iframe
+	title="Web Wallet"
+	bind:this={iframe}
+	src={origin}
+	style="width: {$calcWidth}px; height: {$calcHeight}px;"
+	scrolling="no"
+/>
 
+<!-- </div> -->
 <style>
 	.iframe-container {
 		position: relative;
@@ -16,13 +50,10 @@
 		width: 100%;
 		overflow: hidden;
 	}
-	.iframe-inner {
-		flex: 1;
-		height: 100%;
-	}
 	iframe {
-		height: 100%;
-		width: 100%;
+		flex: 1;
+		/* height: var(--offsetWidth);
+		width: var(--offsetHeight); */
 		border: 0;
 	}
 </style>

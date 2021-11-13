@@ -26,5 +26,11 @@
 			"$lib": ["src/lib"],
 			"$lib/*": ["src/lib/*"]
 		}
-	}
+	},
+	 "exclude": [
+		"node_modules",
+		"build",
+		".svelte-kit",
+		"dist"
+	]
 }

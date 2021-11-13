@@ -2,7 +2,10 @@
 	import { onMount } from 'svelte';
 	import Portal from '../../../../iframe-wallet/src/lib/Portal.svelte';
 	import svg from '../../../../iframe-wallet/src/lib/graphics/mini-svg-bookmark.svg';
-
+	let mounted;
+	onMount(async () => {
+		mounted = true;
+	});
 	// Need these for Portal Component
 	let portal;
 	let portalLoaded = false;
@@ -24,7 +27,7 @@
 
 	const handleConnect = async () => {
 		// @ts-ignore
-		reply = await portal.connect();
+		reply = await portal.connectWallet();
 		if (reply.status == portal.CONSTANTS.CONNECTED) connected = true;
 	};
 
@@ -52,31 +55,26 @@
 	const handleSelfEncrypt = async (name, data, tag) => {
 		// @ts-ignore
 		em = await portal.selfEncrypt(data, tag, name);
-		console.log({ em });
 	};
 
 	const handleSelfDecrypt = async (name, data, tag) => {
 		// @ts-ignore
 		dm = await portal.selfDecrypt(data, name);
-		console.log({ dm });
 	};
 
 	const handleGenerateReKey = async (sourcePreName, targetPK, tag) => {
 		// @ts-ignore
 		reKey = await portal.generateReKey(sourcePreName, targetPK, tag);
-		console.log({ reKey });
 	};
 
 	const handleReEncrypt = async (targetPK, encrypted_message, re_key) => {
 		// @ts-ignore
 		rem = await portal.reEncrypt(targetPK, encrypted_message, re_key);
-		console.log({ rem });
 	};
 
 	const handleReDecrypt = async (pre_name, re_encrypted_message) => {
 		// @ts-ignore
 		bob_decrypted = await portal.reDecrypt(pre_name, re_encrypted_message);
-		console.log({ bob_decrypted });
 	};
 </script>
 
@@ -122,8 +120,10 @@
 		>Bob Decrypt</button
 	>
 </p>
-<Portal {origin} bind:portal bind:portalLoaded />
 
+{#if mounted}
+	<Portal {origin} bind:portal />
+{/if}
 <br /><br />{reply?.status ? reply.status : ''}
 <br /><br />
 Loaded: {portalLoaded}<br />

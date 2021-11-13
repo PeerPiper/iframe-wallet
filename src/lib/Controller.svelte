@@ -3,6 +3,8 @@
 	import { elasticOut, quintOut } from 'svelte/easing';
 	import { tweened } from 'svelte/motion';
 	import { scale, slide } from 'svelte/transition';
+	import { confirmSection } from './stores.js';
+	import ListKeys from './utils/ListKeys.svelte';
 
 	export let origin;
 	export let portalLoaded = false;
@@ -13,53 +15,17 @@
 	let keys;
 	let stayConnected;
 
-	let offsetWidth;
-	let offsetHeight;
-
 	let closedOpacity = 15;
-	let openedOpacity = 30;
 	let opacity = closedOpacity; // percent
-
-	$: shortKey =
-		keys && keys.length > 0
-			? keys[0]?.publicKeyBase58.slice(0, 3) +
-			  '...' +
-			  keys[0]?.publicKeyBase58.slice(
-					keys[0]?.publicKeyBase58.length - 5,
-					keys[0]?.publicKeyBase58.length - 1
-			  )
-			: 'sk';
-
-	// modal params
-	let intial = 20; // width/height percentage
 	let duration = 750;
-	let easing = quintOut;
-
-	// interpolate the dimensions
-	const minWidth = tweened(intial, {
-		duration,
-		easing
-	});
-
-	const minHeight = tweened(intial, {
-		duration,
-		easing
-	});
-
-	// trigger when expand toggles
-	export const expand = (opening) => {
-		opacity = opening ? openedOpacity : closedOpacity; // change overlay opacity when expanded?
-		$minWidth = opening ? 80 : intial;
-		$minHeight = opening ? 50 : intial;
-	};
 
 	const handleConnect = async () => {
-		connecting = portal.connect().then(async (r) => {
+		connecting = portal.connectWallet().then(async (r) => {
 			connecting = null;
 			if (r.status !== portal.CONSTANTS.CONNECTED) return;
 			connected = true;
 			if (stayConnected) {
-				portal.stayConnected(); // set flag on remote
+				portal.stayConnected();
 				window.sessionStorage.setItem('stayConnected', 'true'); // set flag local to autoconnect
 			}
 			keys = await portal.getLoadedKeys();
@@ -77,57 +43,57 @@
 	$: if (portalLoaded && sessionStorage.getItem('stayConnected') == 'true') handleConnect();
 </script>
 
-<div
-	class="container"
-	style="--container-min-width: {$minWidth}%;--container-min-height: {$minHeight}%;--opacity: {opacity}%;"
->
-	<div class="inner-container" bind:offsetWidth bind:offsetHeight>
-		<small><a href={origin} target="_blank" rel="noreferrer">Open in new window ↗️</a></small>
-		{#if !connected}
-			<!-- completely gratuitous transitions -->
-			<div
-				out:slide={{
-					duration,
-					delay: duration,
-					easing: elasticOut
-				}}
-				in:scale={{
-					duration,
-					delay: duration,
-					easing: elasticOut
-				}}
-			>
-				<div class="header">
-					<input bind:value={origin} />
-				</div>
-				<button
-					disabled={!portalLoaded || connected}
-					class={!portalLoaded ? 'red' : connecting ? 'yellow' : 'ready'}
-					on:click|preventDefault={handleConnect}
-					>{!portalLoaded ? 'Loading...' : connecting ? 'Connecting' : 'Connect'}</button
-				><br />
-				<input type="checkbox" bind:checked={stayConnected} /> Stay Connected
+<div class="container" style="--opacity: {opacity}%;">
+	<small><a href={origin} target="_blank" rel="noreferrer">Open in new window ↗️</a></small>
+	{#if !connected}
+		<!-- completely gratuitous transitions -->
+		<div
+			out:slide={{
+				duration,
+				delay: duration,
+				easing: elasticOut
+			}}
+			in:scale={{
+				duration,
+				delay: duration,
+				easing: elasticOut
+			}}
+		>
+			<div class="header">
+				<input bind:value={origin} />
 			</div>
-		{:else}
-			<!-- completely gratuitous transitions -->
-			<div
-				transition:scale={{
-					duration,
-					delay: duration,
-					easing: elasticOut
-				}}
-			>
-				<button disabled={!connected} class="ready" on:click|preventDefault={handleDisconnect}
-					>Disconnect from
-					{shortKey}
-				</button><br />
-			</div>
-		{/if}
-
-		<!-- iframe slot -->
-		<div name="iframe-slot">
-			<slot {stayConnected} />
+			<button
+				disabled={!portalLoaded || connected}
+				class={!portalLoaded ? 'red' : connecting ? 'yellow' : 'ready'}
+				on:click|preventDefault={handleConnect}
+				>{!portalLoaded ? 'Loading...' : connecting ? 'Connecting' : 'Connect'}</button
+			><br />
+			<input type="checkbox" bind:checked={stayConnected} /> Stay Connected
 		</div>
+	{:else}
+		<!-- completely gratuitous transitions -->
+		<div
+			in:scale={{
+				duration,
+				delay: duration,
+				easing: elasticOut
+			}}
+			out:slide={{
+				duration,
+				delay: duration,
+				easing: elasticOut
+			}}
+		>
+			<button disabled={!connected} class="ready" on:click|preventDefault={handleDisconnect}
+				>Disconnect Wallet
+			</button><br />
+			<ListKeys {keys} />
+		</div>
+	{/if}
+
+	<!-- iframe slot -->
+	<div name="iframe-slot">
+		<slot {stayConnected} />
 	</div>
 </div>
 
@@ -140,15 +106,14 @@
 		display: block;
 		overflow: hidden;
 	}
-	.inner-container {
-		display: block;
-		height: 100%;
-	}
+
 	.container {
 		display: flex;
 		flex-direction: column;
 		justify-content: flex-start;
 		align-content: flex-start;
+		align-items: flex-end;
+		text-align: right;
 
 		position: fixed;
 		top: 10px;
@@ -162,15 +127,13 @@
 		z-index: 99 !important;
 		min-width: var(--container-min-width);
 		min-height: var(--container-min-height);
-		width: 100px;
-		height: 200px;
 	}
 	.header {
 		display: flex;
 		flex-direction: column;
 		flex-wrap: nowrap;
 		justify-content: flex-start;
-		align-items: stretch;
+		align-items: flex-end;
 		align-content: stretch;
 	}
 	input {
@@ -180,17 +143,15 @@
 		border-style: inset;
 		max-width: fit-content;
 	}
-	button.green {
-		background-color: #4caf50;
-	}
+
 	button.yellow {
-		background-color: rgb(230, 208, 10, 0.8);
+		background-color: rgb(230, 208, 10, 0.82);
 	}
 	button.ready {
-		background-color: rgb(47, 137, 255);
+		background-color: rgb(47, 137, 255, 0.82);
 	}
 	button.red {
-		background-color: rgb(196, 60, 60);
+		background-color: rgb(196, 60, 60, 0.82);
 	}
 	button {
 		border: none;

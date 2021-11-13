@@ -1,4 +1,5 @@
 import { handlers } from './handlers';
+import { maybePreprocess } from './handlers/preprocess';
 
 var iframe;
 var origin;
@@ -31,10 +32,35 @@ class RemoteRpcProxy {
 		return new Proxy(
 			handlers, // define this methods by importing from handlers
 			{
-				get(target, prop) {
-					return async function () {
-						return await rpc(prop, ...arguments);
-					};
+				capturedCalls: [], // for.namespace.chaining
+				get(target, property, receiver) {
+					// check to see if property is function or namespace object
+					// only accounts for 1 name deep at this time, otherwise: complexity++
+					let desc =
+						Object.getOwnPropertyDescriptor(target, property) ||
+						Object.getOwnPropertyDescriptor(this.capturedCalls[0]?.desc?.value, property);
+
+					if (desc?.value && typeof desc?.value === 'function') {
+						let method = property;
+
+						for (let call of this.capturedCalls) {
+							if (call.type === 'getter') {
+								method = `${call.name}.${property}`; // only accounts for 1 name deep at this time, otherwise: complexity++
+							}
+						}
+						// this.capturedCalls = []; // clear cache
+
+						const regularRPC = async function () {
+							return await rpc(method, ...arguments);
+						};
+
+						// return regularRPC;
+						return maybePreprocess(regularRPC, rpc, method, ...arguments);
+					} else {
+						// console.log(`${property} is an object`, { desc }, { arguments });
+						this.capturedCalls.push({ type: 'getter', name: property, desc });
+						return receiver;
+					}
 				}
 			}
 		);
