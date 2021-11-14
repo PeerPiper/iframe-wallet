@@ -18,7 +18,7 @@
 		<div class="attention">
 			<!-- this is default content, override with slot -->
 			<div>
-				⚠️ Authorize {props} from your wallet?
+				⚠️ Authorize {props.method} from your wallet?
 			</div>
 			<div class="submit">
 				<button on:click={handleConfirm}>Yes</button>
