@@ -1,5 +1,6 @@
 import * as B64 from 'base64-js';
 import deepHash from './deepHash';
+import { BigNumber } from 'bignumber.js';
 
 export type Base64UrlString = string;
 
@@ -226,8 +227,8 @@ export interface TransactionInterface {
 	data_size: string;
 	data_root: string;
 }
-
-export default class Transaction extends BaseObject implements TransactionInterface {
+export default {};
+export class Transaction extends BaseObject implements TransactionInterface {
 	public readonly format: number = 2;
 	public id: string = '';
 	public readonly last_tx: string = '';
@@ -398,3 +399,27 @@ export default class Transaction extends BaseObject implements TransactionInterf
 		}
 	}
 }
+
+export function winstonToAr(
+	winstonString: string,
+	{ formatted = false, decimals = 12, trim = true } = {}
+) {
+	let number = stringToBigNum(winstonString, decimals).shiftedBy(-12);
+
+	return formatted ? number.toFormat(decimals) : number.toFixed(decimals);
+}
+
+export function arToWinston(arString: string, { formatted = false } = {}) {
+	let number = stringToBigNum(arString).shiftedBy(12);
+
+	return formatted ? number.toFormat() : number.toFixed(0);
+}
+
+function stringToBigNum(stringValue: string, decimalPlaces: number = 12): BigNumber {
+	return BigNum(stringValue, decimalPlaces);
+}
+
+const BigNum = (value: string, decimals: number): BigNumber => {
+	let instance = BigNumber.clone({ DECIMAL_PLACES: decimals });
+	return new instance(value);
+};

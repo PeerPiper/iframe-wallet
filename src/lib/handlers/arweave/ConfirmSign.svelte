@@ -8,6 +8,13 @@
 
 	const { dataToSign, options, transaction } = props.params;
 
+	let tx = new ArweaveUtils.Transaction(transaction);
+	let tags = tx.tags.map((tag) => ({
+		name: tag.get('name', { decode: true, string: true }),
+		val: tag.get('value', { decode: true, string: true })
+	}));
+	console.log({ tags });
+
 	$: props && dataToSign && transaction && checkTx();
 
 	// Check dataToSign to ensure it matches what the app passed in
@@ -28,13 +35,21 @@ let:props={p} gets them back up from the <DefaultConfirmation> slot
 	<div class="attention">
 		<!-- this is default content, override with slot -->
 		<div>
-			⚠️ Attention! You are about to sign ({p.method}) this Arweave transaction. Do you authorize
-			this?
+			⚠️ Attention! You are about to sign ({p.method}) this Arweave transaction. Authorize to
+			proceed?
 		</div>
 		<div>
-			Details:<br />
+			Tags:<br />
+			{#each tags as { name, val }}
+				<li class={name.includes('App-Name') ? 'bold' : ''}>
+					{name}:
+					{val}
+				</li>
+			{/each}
 			Token transfer: {transaction.quantity}<br />
-			Gas fees: {transaction.reward}<br />
+			Gas fees: {transaction.reward} (~${(
+				ArweaveUtils.winstonToAr(transaction.reward) * 100
+			).toFixed(5)})<br />
 		</div>
 		<p>{!checksOut ? 'Checking data...' : 'Checks Out'}</p>
 		<div class="submit">
@@ -56,5 +71,8 @@ let:props={p} gets them back up from the <DefaultConfirmation> slot
 	}
 	button:disabled {
 		background-color: grey !important;
+	}
+	.bold {
+		font-weight: bolder;
 	}
 </style>
