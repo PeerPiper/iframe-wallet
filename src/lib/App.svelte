@@ -23,9 +23,13 @@
 	let handleConfirmed;
 	let handleDenied;
 
+	let method;
+	let params;
+
 	// set confirm fn
-	$confirm = async (methodName, params) => {
+	$confirm = async (methodName, args) => {
 		$confirmSection = methodName;
+		params = args;
 		return new Promise((resolve, reject) => {
 			handleConfirmed = () => {
 				$confirmSection = null; // reset UI
@@ -46,8 +50,6 @@
 	let handleGenerateKeypair;
 	let connected;
 	let isTopWindow;
-
-	let method;
 
 	const SAVED_KEYS = '__SAVED_KEY';
 	const def = null;
@@ -136,7 +138,7 @@
 			}
 
 			method = event.data?.method;
-			let params = event.data?.params;
+			let parameters = event.data?.params;
 
 			const leaf = (obj, path) => path.split('.').reduce((value, el) => value && value[el], obj);
 			// console.log(`method ${method} in handlers: `, leaf(handlers, method));
@@ -152,14 +154,14 @@
 			try {
 				let fn = handlers[method] || leaf(handlers, method);
 				// console.log({ fn });
-				let args = params ? params : [];
+				let args = parameters ? parameters : [];
 				if (method === 'connectWallet') args = [event.origin]; // connectWallet is the only method that needs the origin passed in? {...args, origin: event.origin}
 				// console.log({ fn }, fn.name, { args });
 				result = await fn(...args);
 				if (method === 'connectWallet' && result.status == CONSTANTS.CONNECTED) handleConnect();
 				reply(result);
 			} catch (error) {
-				let err = new Error(`RPC error calling ${method}(${params.toString()})`);
+				let err = new Error(`RPC error calling ${method}(${parameters.toString()})`);
 				console.error(err);
 				reply(err);
 			}
@@ -168,7 +170,6 @@
 	});
 </script>
 
-active: {active}
 <svelte:window on:message={handleMessage} />
 
 <main bind:offsetWidth bind:offsetHeight>
@@ -178,7 +179,7 @@ active: {active}
 		<div class="active">
 			<svelte:component
 				this={active.component}
-				props={method || 'connectWallet'}
+				props={{ method, params } || { method: 'connectWallet', params }}
 				on:confirmed={handleConfirmed}
 				on:denied={handleDenied}
 			/>
