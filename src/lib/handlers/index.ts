@@ -73,7 +73,7 @@ export let handlers: { [Key: string]: Function } = {
 			// get confirm from svelte stores /  { get } from 'svelte/store';
 			let confirmed =
 				sessionStorage.getItem(stayConnected) == 'true' || (await get(confirm)('connect', origin));
-			console.log({ confirmed }, sessionStorage.getItem(stayConnected));
+
 			if (!confirmed) return false;
 			connected = true;
 			const ret = { status: CONSTANTS.CONNECTED, message: 'Wallet connected!' };
@@ -138,7 +138,6 @@ export let handlers: { [Key: string]: Function } = {
 		});
 	},
 	getLoadedKeys: () => {
-		console.log('Getting loaded keys');
 		let results = [];
 		// for (let name of pre.keys()) {
 		// 	results.push({

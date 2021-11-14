@@ -4,19 +4,14 @@
 	export let props;
 
 	let defConf;
-
-	let handleClick = () => {
-		console.log('handling click');
-		console.log({ defConf });
-		defConf.handleConfirm();
-	};
 </script>
 
 <DefaultConfirmation bind:this={defConf} {props} let:props={p} on:confirmed>
 	<div class="attention">
 		<!-- this is default content, override with slot -->
 		<div>
-			⚠️ Attention! You are about to connect ({p}) this site to your wallet. Do you authorize this?
+			⚠️ Attention! You are about to connect ({p.method}) this site to your wallet. Do you authorize
+			this?
 		</div>
 		<div class="submit">
 			<button on:click|preventDefault={defConf.handleConfirm}>Yes</button>

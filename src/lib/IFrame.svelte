@@ -31,7 +31,7 @@
 	}
 </script>
 
-<!-- <div class="iframe-container"> -->
+<!-- debug info -->
 <!-- iframe: {offsetWidth} x {offsetHeight}<br /> -->
 <!-- iframeCalc: {$calcWidth} x {$calcHeight}<br /> -->
 <iframe
@@ -42,18 +42,9 @@
 	scrolling="no"
 />
 
-<!-- </div> -->
 <style>
-	.iframe-container {
-		position: relative;
-		height: 100%;
-		width: 100%;
-		overflow: hidden;
-	}
 	iframe {
 		flex: 1;
-		/* height: var(--offsetWidth);
-		width: var(--offsetHeight); */
 		border: 0;
 	}
 </style>

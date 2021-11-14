@@ -17,7 +17,6 @@
 	const leaf = (obj, path) => path.split('.').reduce((value, el) => value && value[el], obj);
 
 	let active; // active confirmation UI component
-	// $: active = confirmationComponents[$confirmSection] || false; // picked by $confirm fn below
 	$: active = $confirmSection ? leaf(confirmationComponents, $confirmSection) : false; // picked by $confirm fn below
 
 	let handleConfirmed;
@@ -179,7 +178,7 @@
 		<div class="active">
 			<svelte:component
 				this={active.component}
-				props={{ method, params } || { method: 'connectWallet', params }}
+				props={{ method: $confirmSection, params }}
 				on:confirmed={handleConfirmed}
 				on:denied={handleDenied}
 			/>
