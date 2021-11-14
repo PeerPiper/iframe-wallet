@@ -1,6 +1,6 @@
 {
 	"name": "iframe-wallet",
-	"version": "0.0.3",
+	"version": "0.0.4",
 	"scripts": {
 		"dev": "svelte-kit dev --port=3444",
 		"build": "node fix-new-urls.js && svelte-kit build",
@@ -29,6 +29,7 @@
 	},
 	"type": "module",
 	"dependencies": {
+		"bignumber.js": "^9.0.1",
 		"buffer": "^6.0.3",
 		"immortal-db": "^1.1.0"
 	},
