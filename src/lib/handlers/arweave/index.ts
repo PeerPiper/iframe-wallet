@@ -138,9 +138,8 @@ export const arweaveWalletAPI = {
 	},
 	async sign(params): Promise<Signature> {
 		console.log(`sign with params`, { params });
-		// TODO: confirm
 
-		let confirmed = await get(confirm)('arweaveWalletAPI.sign', params.dataToSign);
+		let confirmed = await get(confirm)('arweaveWalletAPI.sign', params);
 		if (!confirmed) return false;
 
 		const address = await arweaveWalletAPI.getActiveAddress();
