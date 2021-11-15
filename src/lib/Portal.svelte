@@ -47,6 +47,7 @@
 
 	const handleMessage = async (event) => {
 		if (event.data == CONSTANTS.INITIALIZED) {
+			setMaxDimensions();
 			syncWidth();
 			syncHeight();
 			portalLoaded = true;
@@ -58,6 +59,19 @@
 	onMount(async () => {
 		mounted = true; // Parent needs to mount first, to ensure the iframe listener is added
 	});
+
+	$: portalLoaded && document.body.clientWidth && setMaxDimensions();
+
+	function setMaxDimensions() {
+		iframe.contentWindow.postMessage(
+			{ msg: 'maxOffsetWidth', size: document.body.clientWidth },
+			'*'
+		);
+		iframe.contentWindow.postMessage(
+			{ msg: 'maxOffsetHeight', size: document.body.clientHeight },
+			'*'
+		);
+	}
 
 	function syncWidth() {
 		// Listen for messages on port1
@@ -76,7 +90,7 @@
 	}
 </script>
 
-<svelte:window on:message={handleMessage} />
+<svelte:window on:message={handleMessage} on:resize={setMaxDimensions} />
 
 {#if mounted}
 	<Controller {origin} bind:portalLoaded portal={aggregated} bind:connected>
