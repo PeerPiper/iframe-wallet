@@ -68,7 +68,9 @@
 				on:click|preventDefault={handleConnect}
 				>{!portalLoaded ? 'Loading...' : connecting ? 'Connecting' : 'Connect'}</button
 			><br />
-			<input type="checkbox" bind:checked={stayConnected} /> Stay Connected
+			<div style={connecting ? 'display: none;' : ''}>
+				<input type="checkbox" bind:checked={stayConnected} /> Stay Connected
+			</div>
 		</div>
 	{:else}
 		<!-- completely gratuitous transitions -->
