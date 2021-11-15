@@ -11,6 +11,9 @@
 	import { privateKeyJwkFromEd25519bytes, jwkToSecretBytes } from './handlers/ed25519/utils';
 	import ListKeys from './utils/ListKeys.svelte';
 
+	let maxOffsetWidth;
+	let maxOffsetHeight;
+
 	let offsetWidth;
 	let offsetHeight;
 
@@ -118,6 +121,18 @@
 		 * Handle incoming messages to the iFrame
 		 */
 		handleMessage = async (event) => {
+			// handle parent body size
+			if (event.data?.msg == 'maxOffsetWidth') {
+				maxOffsetWidth = event.data.size;
+				return;
+			}
+			// handle parent body size
+			if (event.data?.msg == 'maxOffsetHeight') {
+				maxOffsetHeight = event.data.size;
+				return;
+			}
+
+			// Ports used after this point
 			if (!event.ports[0]) return; // skip if not a port-port message
 
 			const reply = (r) => {
@@ -171,8 +186,12 @@
 
 <svelte:window on:message={handleMessage} />
 
-<main bind:offsetWidth bind:offsetHeight>
-	<!-- App: {offsetWidth} x {offsetHeight}<br /> -->
+<main
+	bind:offsetWidth
+	bind:offsetHeight
+	style="max-width: {maxOffsetWidth}px; max-height: {maxOffsetHeight}px;"
+>
+	<!-- App: {maxOffsetWidth} x {maxOffsetHeight}<br /> -->
 	<!-- Confirmation Section -->
 	{#if active}
 		<div class="active">
@@ -209,11 +228,8 @@
 		margin: 1em;
 		min-width: 100px;
 		min-height: 2px;
-		width: fit-content;
 	}
 	.active {
-		/* width: 500px;
-		height: 250px; */
 		min-width: 400px;
 		min-height: 200px;
 	}
