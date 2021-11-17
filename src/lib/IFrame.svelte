@@ -46,5 +46,7 @@
 	iframe {
 		flex: 1;
 		border: 0;
+		/* min-height: 100px; */
+		/* min-width: 200px; */
 	}
 </style>
