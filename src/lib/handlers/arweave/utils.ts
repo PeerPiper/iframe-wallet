@@ -420,6 +420,13 @@ function stringToBigNum(stringValue: string, decimalPlaces: number = 12): BigNum
 }
 
 const BigNum = (value: string, decimals: number): BigNumber => {
-	let instance = BigNumber.clone({ DECIMAL_PLACES: decimals });
+	// because of the way Vite builds libraries that have both commonjs and es modules :/
+	let instance;
+	try {
+		instance = BigNumber.clone({ DECIMAL_PLACES: decimals });
+	} catch (error) {
+		console.warn('Caught big num issues, try default', error);
+		instance = BigNumber.default.clone({ DECIMAL_PLACES: decimals });
+	}
 	return new instance(value);
 };
