@@ -38,5 +38,5 @@ notice or attribution required by the License must also include
 this Commons Clause License Condition notice.
 
 Software: All iframe-wallet associated files.
-License: MIT
+License: MIT+CC
 Licensor: Doug Anderson (@douganderson444)
