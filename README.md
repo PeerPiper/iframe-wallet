@@ -1,6 +1,8 @@
 # iFrame Wallet
 
-This is a cryptographic wallet itended to be embedded in an iFrame in the parent website (as opposed to the typical way that it's in a browser extension).
+This wallet is not a browser extension.
+
+This is an experimental new type of cryptographic wallet itended to be embedded in an iFrame in the parent website (as opposed to the typical way that it's in a browser extension).
 
 ## Background
 
@@ -10,29 +12,28 @@ Developers must
 
 - work around extension globals injected
 - itegrate each wallet
-- only offer a finite number of wallet options to their users
+- only offer a list of preselected wallet options to their users
 - more integration work when a new wallet if offered
-- there are too many wallet options to consider
 
-Users must
+To adopt the current wallet model, users must:
 
 - have a browser that can be extended (no mobile?)
-- must want to download & install
-- actually download and install
-- choose only from app-chosen wallets instead of their own
-- work within the chosen wallet capabilities
+- must _want_ to download & install (ugh, I have to install something? Really?)
+- _actually_ download and install
+- choose only from app-chosen wallets, instead of their own
+- work within the chosen wallet capabilities (many wallets don't offer encryption or key type options)
 
 So since we have barriers to adoption and dev limitations, we can look at another way.
 
-What if the wallet was just a website? Not just any website, but a website that:
+What if the wallet was just a website? Not just any website, but a website:
 
 - with miminal or zero javascript dependencies (to minimize XSS risk)
 - configurable, so user could choose to use their own wallet
-- hostable from content verifiable sources, such as IPFS
+- hostable from content verifiable sources, such as IPFS (content identifiable)
 - hostable from sandboxable sources, such as Deno
-- Zero barrier to entry
+- Zero barrier to entry (no download)
 - Portable to mobile
-- extensible by devs and users
+- extensible by devs and users (add your own CSS, confirmation components, anything)
 
 Then perhaps we could have greater adoption and get this Web3 thing really rolling?
 
