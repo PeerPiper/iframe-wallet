@@ -1,6 +1,6 @@
 import * as B64 from 'base64-js';
 import deepHash from './deepHash';
-import { BigNumber } from 'bignumber.js';
+import * as BigNumber from 'bignumber.js';
 
 export type Base64UrlString = string;
 
