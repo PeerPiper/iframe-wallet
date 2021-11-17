@@ -51,13 +51,13 @@ npm run dev
 
 ## Dev Notes
 
-To add a confirmation to a crypto method handler:
+To add a (Svelte) confirmation Components to a crypto method handler:
 
 ```js
-let confirmed = await get(confirm)('<this.method.name.path>', origin);
+let confirmed = await get(confirm)('<method.name.path>', origin);
 ```
 
-Where `<this.method.name.path>` is something like `'connect'` or `'sign'`.
+Where `<method.name.path>` is something like `'connect'` or `'sign'` or `'arweaveWalletAPI.sign'`.
 
 To add a custom confirmation component:
 
@@ -68,7 +68,7 @@ To add a custom confirmation component:
 ```js
 let customizedComponents = {
 	connect: { component: Connect }  // existing custom confirm component
-	<namespce>: {
+	<namespace>: {
 		<methodName>: {
 			component: <CustomComponentName>
 		}
@@ -78,7 +78,7 @@ let customizedComponents = {
 
 ## Contributing
 
-Don't add any JavaScript dependencies, we're trying to minimize any chance of attacks. Otherwise Issues and PRs accepted.
+Don't add any JavaScript dependencies unless you absolutely have to, we're trying to minimize any chance of attacks. Rust+ Wasm would be preferred. Otherwise Issues and PRs accepted.
 
 ## License
 
