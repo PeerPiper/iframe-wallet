@@ -191,7 +191,9 @@
 	bind:offsetHeight
 	style="max-width: {maxOffsetWidth}px; max-height: {maxOffsetHeight}px;"
 >
-	<!-- App: {maxOffsetWidth} x {maxOffsetHeight}<br /> -->
+	<!-- App: {offsetWidth} x {offsetHeight}<br /> -->
+	<!-- AppMax: {maxOffsetWidth} x {maxOffsetHeight} -->
+
 	<!-- Confirmation Section -->
 	{#if active}
 		<div class="active">
@@ -227,7 +229,10 @@
 	main {
 		margin: 1em;
 		min-width: 100px;
-		min-height: 2px;
+		min-height: 1px;
+		width: fit-content;
+		overflow-wrap: break-word;
+		word-break: break-all;
 	}
 	.active {
 		min-width: 400px;
