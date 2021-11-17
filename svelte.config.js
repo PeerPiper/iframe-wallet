@@ -42,7 +42,10 @@ const config = {
 			},
 			files: mm.matcher('!**/build.*')
 		},
-		adapter: staticIPFSAdapter()
+		adapter: staticIPFSAdapter({
+			removeBuiltInServiceWorkerRegistration: true,
+			injectPagesInServiceWorker: true
+		})
 		// adapter: vercelAdapter()
 	}
 };
