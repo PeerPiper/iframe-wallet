@@ -51,7 +51,6 @@ let:props={p} gets them back up from the <DefaultConfirmation> slot
 				ArweaveUtils.winstonToAr(transaction.reward) * 100
 			).toFixed(5)})<br />
 		</div>
-		<p>{!checksOut ? 'Checking data...' : 'Checks Out'}</p>
 		<div class="submit">
 			<button on:click|preventDefault={defConf.handleConfirm} disabled={!checksOut}>Yes</button>
 		</div>
@@ -74,5 +73,9 @@ let:props={p} gets them back up from the <DefaultConfirmation> slot
 	}
 	.bold {
 		font-weight: bolder;
+	}
+	li {
+		overflow-wrap: break-word;
+		word-break: break-all;
 	}
 </style>
