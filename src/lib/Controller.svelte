@@ -5,6 +5,7 @@
 	import Dragger from './graphics/Dragger.svelte';
 	import Draggable from './graphics/Draggable.svelte';
 	import toggle from './graphics/toggle.svg';
+	import { tweened } from 'svelte/motion';
 
 	export let origin;
 	export let portalLoaded = false;
@@ -15,8 +16,9 @@
 	let keys;
 	let stayConnected;
 
-	let closedOpacity = 15;
-	let opacity = closedOpacity; // percent
+	let closedOpacity = 20;
+	let openOpacity = 20;
+	let opacity = openOpacity; // percent
 	let duration = 700;
 
 	let x = 10;
@@ -45,81 +47,77 @@
 	//check auto connect
 	$: if (portalLoaded && sessionStorage.getItem('stayConnected') == 'true') handleConnect();
 
-	let display = true;
+	export let display = true;
 	function toggleDisplay() {
 		display = !display;
+		opacity = display ? openOpacity : closedOpacity;
 	}
+
+	let toggleStyle = '';
+	$: toggleStyle = display ? ';' : `height: 1px; width: 1px`;
 </script>
 
 <Draggable bind:x bind:y>
 	<div class="container" style="--opacity: {opacity}%; top: {y}px; right: {-x}px">
 		<div class="mininav">
+			Wallet
 			<Dragger /> <img class="toggle" src={toggle} alt="toggle" on:click={toggleDisplay} />
 		</div>
-		{#if display}
-			<div
-				class="bottom-half"
-				transition:slide={{
-					duration,
-					delay: 0,
-					easing: quintOut
-				}}
-			>
-				<small><a href={origin} target="_blank" rel="noreferrer">Open in new window ↗️</a></small>
-				{#if !connected}
-					<!-- completely gratuitous transitions -->
-					<div
-						out:slide={{
-							duration,
-							delay: duration,
-							easing: elasticOut
-						}}
-						in:scale={{
-							duration,
-							delay: duration,
-							easing: elasticOut
-						}}
-					>
-						<div class="header">
-							<input bind:value={origin} />
-						</div>
-						<button
-							disabled={!portalLoaded || connected}
-							class={!portalLoaded ? 'red' : connecting ? 'yellow' : 'ready'}
-							on:click|preventDefault={handleConnect}
-							>{!portalLoaded ? 'Loading...' : connecting ? 'Connecting' : 'Connect'}</button
-						><br />
-						<div style={connecting ? 'display: none;' : ''}>
-							<input type="checkbox" bind:checked={stayConnected} /> Stay Connected
-						</div>
+		<div class="bottom-half" style={toggleStyle}>
+			<small><a href={origin} target="_blank" rel="noreferrer">Open in new window ↗️</a></small>
+			{#if !connected}
+				<!-- completely gratuitous transitions -->
+				<div
+					out:slide={{
+						duration,
+						delay: duration,
+						easing: elasticOut
+					}}
+					in:scale={{
+						duration,
+						delay: duration,
+						easing: elasticOut
+					}}
+				>
+					<div class="header">
+						<input bind:value={origin} />
 					</div>
-				{:else}
-					<!-- completely gratuitous transitions -->
-					<div
-						in:scale={{
-							duration,
-							delay: duration,
-							easing: elasticOut
-						}}
-						out:slide={{
-							duration,
-							delay: duration,
-							easing: elasticOut
-						}}
-					>
-						<button disabled={!connected} class="ready" on:click|preventDefault={handleDisconnect}
-							>Disconnect Wallet
-						</button><br />
-						<ListKeys {keys} />
+					<button
+						disabled={!portalLoaded || connected}
+						class={!portalLoaded ? 'red' : connecting ? 'yellow' : 'ready'}
+						on:click|preventDefault={handleConnect}
+						>{!portalLoaded ? 'Loading...' : connecting ? 'Connecting' : 'Connect'}</button
+					><br />
+					<div style={connecting ? 'display: none;' : ''}>
+						<input type="checkbox" bind:checked={stayConnected} /> Stay Connected
 					</div>
-				{/if}
-
-				<!-- iframe slot -->
-				<div name="iframe-slot">
-					<slot {stayConnected} />
 				</div>
+			{:else}
+				<!-- completely gratuitous transitions -->
+				<div
+					in:scale={{
+						duration,
+						delay: duration,
+						easing: elasticOut
+					}}
+					out:slide={{
+						duration,
+						delay: duration,
+						easing: elasticOut
+					}}
+				>
+					<button disabled={!connected} class="ready" on:click|preventDefault={handleDisconnect}
+						>Disconnect Wallet
+					</button><br />
+					<ListKeys {keys} />
+				</div>
+			{/if}
+
+			<!-- iframe slot -->
+			<div name="iframe-slot">
+				<slot {stayConnected} />
 			</div>
-		{/if}
+		</div>
 	</div>
 </Draggable>
 
@@ -197,5 +195,6 @@
 		display: flex;
 		margin: 0.1em;
 		align-items: center;
+		opacity: 0.85;
 	}
 </style>
