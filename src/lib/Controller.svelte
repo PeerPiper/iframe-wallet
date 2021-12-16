@@ -65,16 +65,17 @@
 	$: if (origin && cacheOrigin) cacheOrigin();
 
 	function toggleDisplay() {
-		calcWidth = tweened(offsetWidth, {
+		display = !display;
+
+		calcWidth = tweened(null, {
 			duration,
 			easing
 		});
-		calcHeight = tweened(offsetHeight, {
+		calcHeight = tweened(null, {
 			duration,
 			easing
 		});
 
-		display = !display;
 		$calcWidth = display ? initalWidth : 1; // tweening will make this transition instead of jump for us
 		$calcHeight = display ? initalHeight : 1;
 	}
@@ -82,25 +83,23 @@
 	let toggleStyle = '';
 	$: toggleStyle = display ? ';' : `height: 1px; width: 1px`;
 
-	$: if (display && offsetWidth && offsetHeight) {
-		console.log('Updating initalWidth to ', offsetWidth);
-		initalWidth = offsetWidth;
-		initalHeight = offsetHeight;
-	}
+	// experimental, tempermental
+	// $: if (display && offsetWidth > 1 && offsetHeight > 1) {
+	// 	console.log('Updating initalWidth to ', offsetWidth);
+	// 	initalWidth = offsetWidth;
+	// 	initalHeight = offsetHeight;
+	// }
+	// "width: {$calcWidth}px; height: {$calcHeight}px;"
 </script>
 
 <Draggable bind:x bind:y>
 	<div class="wallet-container" style="--opacity: {opacity}%; top: {y}px; right: {-x}px">
 		<div class="mininav">
 			Web3 Keychain
+			<!-- {offsetWidth} x{offsetHeight} -->
 			<Dragger /> <img class="toggle" src={toggle} alt="toggle" on:click={toggleDisplay} />
 		</div>
-		<div
-			class="bottom-half"
-			style="width: {$calcWidth}px; height: {$calcHeight}px;"
-			bind:offsetWidth
-			bind:offsetHeight
-		>
+		<div class="bottom-half" style={toggleStyle} bind:offsetWidth bind:offsetHeight>
 			{#if origin}
 				<small
 					>Open <a href={origin} target="_blank" rel="noreferrer">{shortenURL(origin)} ↗️</a></small
