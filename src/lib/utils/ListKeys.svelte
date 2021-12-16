@@ -1,4 +1,4 @@
-<script lang="ts">
+<script>
 	// show the user's keys
 	// parse out the JWKs into types: RSA and Ed25519 according to JWK
 	import { shorten } from './index';
@@ -9,37 +9,51 @@
 </script>
 
 {#if keys && keys.length > 0}
-	<h3>Key List:</h3>
-	<div class="keylist">
-		<div class="row left">
-			<span>RSA:</span>
+	<div class="card">
+		<div class="keylist">
+			<div class="row left">
+				<span>Arweave</span>
+			</div>
+			<div class="row list-group">
+				<ul>
+					{#each keys.filter((k) => k.kty == 'RSA') as rsaJWK}
+						<li
+							class="{collapsed && selectedRSA != rsaJWK.kid
+								? 'hide'
+								: ''} list-group-item list-group-item-action "
+						>
+							{shorten(rsaJWK.kid)}
+						</li>
+					{/each}
+				</ul>
+			</div>
 		</div>
-		<div class="row">
-			<ul>
-				{#each keys.filter((k) => k.kty == 'RSA') as rsaJWK}
-					<li class={collapsed && selectedRSA != rsaJWK.kid ? 'hide' : ''}>
-						{shorten(rsaJWK.kid)}
-					</li>
-				{/each}
-			</ul>
-		</div>
-	</div>
-	<div class="keylist">
-		<div class="row left">
-			<span>Ed25519</span>
-		</div>
-		<div class="row">
-			<ul>
-				{#each keys.filter((k) => k.crv == 'Ed25519') as edJWK}
-					<li>{shorten(edJWK.x)}</li>
-					<!-- <b>{shorten(key?.publicKeyBase58)}</b><br /> -->
-				{/each}
-			</ul>
+		<div class="keylist">
+			<div class="row left">
+				<span>Ed25519</span>
+			</div>
+			<div class="row list-group">
+				<ul>
+					{#each keys.filter((k) => k.crv == 'Ed25519') as edJWK}
+						<li class=" list-group-item list-group-item-action ">{shorten(edJWK.x)}</li>
+						<!-- <b>{shorten(key?.publicKeyBase58)}</b><br /> -->
+					{/each}
+				</ul>
+			</div>
 		</div>
 	</div>
 {/if}
 
-<style>
+<style lang="scss" type="text/scss">
+	.card {
+		margin: 1em 0em;
+		background-color: white;
+		padding: 1.5em;
+		-webkit-border-radius: 4px;
+		-moz-border-radius: 4px;
+		border-radius: 4px;
+		box-shadow: 2px 2px 6px rgba(74, 159, 70, 0.7);
+	}
 	.keylist {
 		display: flex;
 		flex-direction: row;
@@ -47,6 +61,10 @@
 		justify-content: flex-start;
 		align-items: stretch;
 		align-content: stretch;
+		border-width: 2px;
+		border-bottom: 1px #d6e7df solid;
+		padding-bottom: 4px;
+		margin-bottom: 4px;
 	}
 	.left {
 		flex-shrink: 2;
@@ -66,5 +84,6 @@
 	}
 	li {
 		list-style: none;
+		font-family: var(--font-mono);
 	}
 </style>
