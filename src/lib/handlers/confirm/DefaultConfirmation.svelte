@@ -8,7 +8,6 @@
 	export function handleConfirm() {
 		let value = true;
 		dispatch('confirmed', { value });
-		console.log('handled confirm');
 	}
 </script>
 
@@ -31,8 +30,8 @@
 	div.attention {
 		display: flex;
 		flex-direction: column;
-		background-color: lightyellow;
-		filter: drop-shadow(2px 4px 6px rgba(0, 0, 0, 0.1));
+		background-color: #fff9c4;
+		filter: drop-shadow(2px 4px 6px rgba(0, 0, 0, 0.3));
 	}
 	div {
 		padding: 0.5em;
