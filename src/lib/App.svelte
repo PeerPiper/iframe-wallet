@@ -2,31 +2,56 @@
 	import '../app.css';
 
 	import { onMount } from 'svelte';
+
 	import * as CONSTANTS from '$lib/handlers/constants';
 	import { handlers, setHost } from '$lib/handlers';
 	import { page } from '$app/stores';
 	import { confirm, confirmSection, keypairs } from './stores';
-
 	import { confirmationComponents } from '$lib/handlers/confirm';
-	import { privateKeyJwkFromEd25519bytes, jwkToSecretBytes } from './handlers/ed25519/utils';
+
 	import ListKeys from './utils/ListKeys.svelte';
+	import logo from './graphics/peerpiper-logo.svg';
 
-	let maxOffsetWidth;
-	let maxOffsetHeight;
+	import FrontEnd from './FrontEnd.svelte';
+	import BackEnd from './BackEnd.svelte';
 
-	let offsetWidth;
-	let offsetHeight;
+	const OPENED_SIGNAL = 'OPENED';
+	const KEYS_SYNC = 'KEYS_SYNC';
+	const SAVED_KEYS = '__SAVED_KEY';
+	const def = null;
 
 	const leaf = (obj, path) => path.split('.').reduce((value, el) => value && value[el], obj);
 
 	let active; // active confirmation UI component
-	$: active = $confirmSection ? leaf(confirmationComponents, $confirmSection) : false; // picked by $confirm fn below
 
-	let handleConfirmed;
-	let handleDenied;
+	let maxOffsetWidth = 900;
+	let maxOffsetHeight = 950;
 
+	let offsetWidth;
+	let offsetHeight;
+
+	// state
+	let topUrl;
+	let publicKeys;
+	let connected;
+	let storedValue;
+	let stayConnected;
+
+	// variables
 	let method;
 	let params;
+
+	// functions
+	let widthReply;
+	let heightReply;
+	let getStoredKeys;
+	let handleMessage;
+	let handleDisconnect;
+	let handleExportKeypair;
+	let handleConfirmed;
+	let handleDenied;
+	let isTopWindow;
+	let importKeys;
 
 	// set confirm fn
 	$confirm = async (methodName, args) => {
@@ -46,36 +71,53 @@
 
 	setHost($page.host);
 
-	let result;
-	let publicKeys;
-	let handleMessage;
-	let handleGenerateKeypair;
-	let connected;
-	let isTopWindow;
-
-	const SAVED_KEYS = '__SAVED_KEY';
-	const def = null;
-
-	let widthReply;
-	let heightReply;
-
+	// Reactive statements
+	$: active = $confirmSection ? leaf(confirmationComponents, $confirmSection) : false; // picked by $confirm fn below
 	$: offsetWidth && widthReply && widthReply(offsetWidth);
 	$: offsetHeight && heightReply && heightReply(offsetHeight);
 
-	$: if ($keypairs) {
-		publicKeys = handlers.getLoadedKeys();
-	}
+	$: if ($keypairs)
+		(async () => {
+			publicKeys = await handlers.getLoadedKeys();
+		})();
 
 	onMount(async () => {
 		// TODO: Split RPC into local only and remote access?
 		isTopWindow = () => window == window.top;
 
-		// load browser db to store keypairs
+		// var topUrl = (window.location != window.parent.location) ? document.referrer : document.location.href;
+		// var topUrl = (parent !== window) ? document.referrer : document.location;
+		topUrl = self === top ? document.URL : document.referrer;
+
+		/** This wallet design is all about getting keys into/from the browser context storage So we need to check storage, load, or import as require. Use Immortal to provide triple redundancy against deletion loss */
 		const { ImmortalDB } = await import('immortal-db');
-		const storedValue = await ImmortalDB.get(SAVED_KEYS, def);
+
+		getStoredKeys = async () => {
+			storedValue = await ImmortalDB.get(SAVED_KEYS, def);
+			return storedValue;
+		};
+
+		await getStoredKeys();
+
+		// Initialize the wasm in the keychain
+		handlers.initialize().then(async (r) => {
+			if (!isTopWindow() && r.status == CONSTANTS.INITIALIZED)
+				window.parent.postMessage(`${CONSTANTS.INITIALIZED}`, '*'); // we're in an iframe, window.parent will receive the initialized message so it knows it can now interact with the wallet handlers
+
+			let allowed = await handlers.connectWallet(topUrl);
+			if (!allowed) return; // do we want user to click connect? Or do it for them?
+			handleConnect();
+		});
 
 		function handleConnect() {
 			connected = true;
+
+			window?.parent?.postMessage(CONSTANTS.CONNECTED, '*'); // send window.parent message so it knows it can now interact with the wallet handlers
+
+			if (stayConnected) {
+				handlers.stayConnected(); // internally skips the confirmation step
+				window.sessionStorage.setItem('stayConnected', 'true'); // set flag local to autoconnect
+			}
 
 			if (storedValue) {
 				// TODO: Password protect first
@@ -85,42 +127,35 @@
 			}
 		}
 
-		handleGenerateKeypair = async () => {
-			console.log('Creating keypairs');
-			// ed25519
-			const { publicKey, secretKey } = handlers.generateEd25519Keypair();
-			const ed25519secretJWK = await privateKeyJwkFromEd25519bytes(secretKey, publicKey);
-			console.log({ ed25519secretJWK });
-
-			// RSA for arweave
-			// @ts-ignore
-			let rsaSecretJWK = await handlers.arweaveWalletAPI.generateJWK();
-
+		// TODO: handle export
+		handleExportKeypair = () => {
 			// TODO: Password protect first
-			await ImmortalDB.set(SAVED_KEYS, JSON.stringify([ed25519secretJWK, rsaSecretJWK]));
-			console.log('Saved. Importing');
-
-			handlers.importKeypairs([ed25519secretJWK, rsaSecretJWK]);
-			$keypairs = $keypairs;
+			const kps = JSON.parse(storedValue);
 		};
 
-		handlers.initialize().then(async (r) => {
-			// let parent know this iframe is ready to initialize
-			if (isTopWindow()) {
-				console.log('is top');
-				// We're not in an iframe, we're at the top, baby
-				let allowed = await handlers.connectWallet(location.origin);
-				if (!allowed) return; // do we want user to click connect? Or do it for them?
-				handleConnect();
-			} else if (r.status == CONSTANTS.INITIALIZED) {
-				window.parent.postMessage(`${CONSTANTS.INITIALIZED}`, '*');
-			}
-		});
+		handleDisconnect = () => {
+			window.sessionStorage.removeItem('stayConnected');
+			const reply = handlers.disconnect();
+			if (reply.status == CONSTANTS.DISCONNECTED) connected = false;
+		};
+
+		importKeys = async (keyArray) => {
+			// TODO: Password protect first
+			console.log('Importing keys: ', keyArray);
+			const promise1 = ImmortalDB.set(SAVED_KEYS, JSON.stringify(keyArray));
+			const promise2 = handlers.importKeypairs(keyArray);
+			await Promise.all([promise1, promise2]); // parallel processing
+
+			$keypairs = $keypairs;
+		};
 
 		/**
 		 * Handle incoming messages to the iFrame
 		 */
 		handleMessage = async (event) => {
+			method = event?.data?.method;
+			let parameters = event?.data?.params;
+
 			// handle parent body size
 			if (event.data?.msg == 'maxOffsetWidth') {
 				maxOffsetWidth = event.data.size;
@@ -147,12 +182,14 @@
 				return;
 			}
 			if (event.data == 'offsetHeightChannel') {
-				heightReply = (height) => event.ports[0].postMessage(height);
+				heightReply = async (height) => {
+					event.ports[0].postMessage(height);
+				};
 				return;
 			}
 
-			method = event.data?.method;
-			let parameters = event.data?.params;
+			// methods only after this point
+			if (!method) return;
 
 			const leaf = (obj, path) => path.split('.').reduce((value, el) => value && value[el], obj);
 			// console.log(`method ${method} in handlers: `, leaf(handlers, method));
@@ -167,11 +204,11 @@
 			 */
 			try {
 				let fn = handlers[method] || leaf(handlers, method);
-				// console.log({ fn });
+				console.log({ handlers }, { fn });
 				let args = parameters ? parameters : [];
-				if (method === 'connectWallet') args = [event.origin]; // connectWallet is the only method that needs the origin passed in? {...args, origin: event.origin}
-				// console.log({ fn }, fn.name, { args });
-				result = await fn(...args);
+				if (method === 'connectWallet') args = [topUrl]; // connectWallet is the only method that needs the origin passed in? {...args, origin: event.origin}
+				// console.log({ fn }, fn?.name, { args });
+				const result = await fn(...args);
 				if (method === 'connectWallet' && result.status == CONSTANTS.CONNECTED) handleConnect();
 				reply(result);
 			} catch (error) {
@@ -186,73 +223,96 @@
 
 <svelte:window on:message={handleMessage} />
 
-<main
-	bind:offsetWidth
-	bind:offsetHeight
-	style="max-width: {maxOffsetWidth}px; max-height: {maxOffsetHeight}px;"
->
-	<!-- App: {offsetWidth} x {offsetHeight}<br /> -->
-	<!-- AppMax: {maxOffsetWidth} x {maxOffsetHeight} -->
-
-	<!-- Confirmation Section -->
-	{#if active}
-		<div class="active">
-			<svelte:component
-				this={active.component}
-				props={{ method: $confirmSection, params }}
-				on:confirmed={handleConfirmed}
-				on:denied={handleDenied}
-			/>
-		</div>
-	{/if}
-
-	<!-- Back Officer Section -->
-	{#if isTopWindow && isTopWindow() && handleGenerateKeypair}
-		<h2>PeerPiper Portal Keychain 🕳️🔑</h2>
-		<p>
-			This wallet is embedded in an iframe in the host's website, so the contexts are different and
-			keypairs are safe. Yet the two can talk via postMessage to encrypt & sign with your keypairs.
-		</p>
-		{#if connected && $keypairs.size < 1}
-			<div class="submit">
-				No keypairs detected in this browser.
-				<button class={'green'} on:click={handleGenerateKeypair}>Create New Keypairs</button>
+<div class="wrapper" bind:offsetWidth bind:offsetHeight>
+	<main>
+		<!-- The Web3 Wallet -->
+		<!-- style="max-width: {maxOffsetWidth}px; max-height: {maxOffsetHeight}px;" -->
+		<!-- offset: {offsetWidth} x {offsetHeight}<br /> -->
+		<!-- Max offset: {maxOffsetWidth} x {maxOffsetHeight}<br /> -->
+		<!-- Confirmation Section -->
+		{#if active}
+			<div class="active">
+				<svelte:component
+					this={active.component}
+					props={{ method: $confirmSection, params }}
+					on:confirmed={handleConfirmed}
+					on:denied={handleDenied}
+				/>
 			</div>
 		{/if}
-		{#if publicKeys}
-			<ListKeys keys={publicKeys} />
+
+		{#if isTopWindow !== undefined && !isTopWindow()}
+			<FrontEnd
+				{storedValue}
+				{connected}
+				{topUrl}
+				{stayConnected}
+				{handleDisconnect}
+				{importKeys}
+				{OPENED_SIGNAL}
+				{KEYS_SYNC}
+			/>
+		{:else}
+			<BackEnd {handlers} {importKeys} {storedValue} {getStoredKeys} {OPENED_SIGNAL} {KEYS_SYNC} />
 		{/if}
-	{/if}
-</main>
+
+		{#if connected && publicKeys}
+			<ListKeys keys={publicKeys} />
+			<!-- TODO: Export keys as desired
+			{#if $keypairs.size > 0}
+					<div class="submit">
+						Export Keys
+						<button class={'green'} on:click={handleExportKeypair}>Export Key</button>
+					</div>
+			{/if} 
+			-->
+		{/if}
+		<footer>
+			<smaller
+				><img src={logo} alt="peerpiper" /> Powered by
+				<a href="https://PeerPiper.io" target="_blank" rel="noreferrer">PeerPiper</a></smaller
+			>
+		</footer>
+	</main>
+</div>
 
 <style>
-	main {
-		margin: 1em;
-		min-width: 100px;
-		min-height: 1px;
+	footer {
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+		align-items: center;
+		padding: 0.75em;
+	}
+	.wrapper {
+		padding: 0px;
+		margin: 0px;
 		width: fit-content;
+		height: auto;
+	}
+
+	main {
+		margin: 14px;
+		min-width: 300px;
+		min-height: fit-content;
+		width: fit-content;
+		height: fit-content;
 		overflow-wrap: break-word;
-		word-break: break-all;
+		word-break: break-word;
+		display: flex;
+		flex-direction: column;
 	}
 	.active {
-		min-width: 400px;
-		min-height: 200px;
+		display: flex;
+		align-items: center;
+		min-width: 350px;
+		min-height: 50px;
+		flex-direction: column;
 	}
-	button.green {
-		background-color: #4caf50;
-	}
-	button {
-		border: none;
-		color: white;
-		padding: 15px 32px;
-		text-align: center;
-		text-decoration: none;
-		display: inline-block;
-		font-size: 16px;
-		margin-left: auto;
-		margin-top: 0.5em;
-		margin-bottom: 1em;
-		border-radius: 2px;
-		filter: drop-shadow(2px 4px 6px rgba(0, 0, 0, 0.1));
+
+	img {
+		width: 1.1em;
+		height: 1.1em;
+		object-fit: contain;
 	}
 </style>
