@@ -28,6 +28,7 @@ async function rpc(method, ...params) {
 }
 
 class RemoteRpcProxy {
+	[x: string]: any;
 	constructor() {
 		return new Proxy(
 			handlers, // define this methods by importing from handlers
