@@ -37,6 +37,11 @@ or substantially, from the functionality of the Software. Any license
 notice or attribution required by the License must also include
 this Commons Clause License Condition notice.
 
+"Royalties Clause" License Condition v1.0
+
+Further to the previous clauses, in use of the software under this license
+you may not remove or modify the royalties software embedded herein.
+
 Software: All iframe-wallet associated files.
-License: MIT+CC
+License: MIT+CC+RC
 Licensor: Doug Anderson (@douganderson444)
