@@ -6,3 +6,4 @@ node_modules
 .vercel_build_output/*
 demo/.vercel_build_output/*
 dist
+logs/*
