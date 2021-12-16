@@ -1,13 +1,11 @@
 <script lang="ts">
 	// show the user's keys
 	// parse out the JWKs into types: RSA and Ed25519 according to JWK
+	import { shorten } from './index';
+
 	export let keys;
 	let selectedRSA;
 	let collapsed;
-
-	let shorten = (key: string) => {
-		return key.slice(0, 3) + '...' + key.slice(key.length - 5, key.length - 1);
-	};
 </script>
 
 {#if keys && keys.length > 0}
@@ -19,7 +17,9 @@
 		<div class="row">
 			<ul>
 				{#each keys.filter((k) => k.kty == 'RSA') as rsaJWK}
-					<li class={collapsed && selectedRSA != rsaJWK.kid ? 'hide' : ''}>{rsaJWK.kid}</li>
+					<li class={collapsed && selectedRSA != rsaJWK.kid ? 'hide' : ''}>
+						{shorten(rsaJWK.kid)}
+					</li>
 				{/each}
 			</ul>
 		</div>
@@ -31,7 +31,7 @@
 		<div class="row">
 			<ul>
 				{#each keys.filter((k) => k.crv == 'Ed25519') as edJWK}
-					<li>{edJWK.x}</li>
+					<li>{shorten(edJWK.x)}</li>
 					<!-- <b>{shorten(key?.publicKeyBase58)}</b><br /> -->
 				{/each}
 			</ul>
