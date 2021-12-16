@@ -1,121 +1,132 @@
 <script>
+	import { onMount } from 'svelte';
 	import { elasticOut, quintOut } from 'svelte/easing';
 	import { scale, slide } from 'svelte/transition';
+	import { tweened } from 'svelte/motion';
+
 	import ListKeys from './utils/ListKeys.svelte';
 	import Dragger from './graphics/Dragger.svelte';
 	import Draggable from './graphics/Draggable.svelte';
 	import toggle from './graphics/toggle.svg';
-	import { tweened } from 'svelte/motion';
+	import { shortenURL } from './utils';
 
-	export let origin;
-	export let portalLoaded = false;
-	export let portal;
+	export let origin = 'http://localhost:3444'; // https://wallet.peerpiper.io/  // default values
+	export let display = true;
 	export let connected;
-
-	let connecting;
-	let keys;
-	let stayConnected;
 
 	let closedOpacity = 20;
 	let openOpacity = 20;
 	let opacity = openOpacity; // percent
 	let duration = 700;
 
-	let x = 10;
-	let y = 10;
+	let offsetWidth;
+	let offsetHeight;
 
-	const handleConnect = async () => {
-		connecting = portal.connectWallet().then(async (r) => {
-			connecting = null;
-			if (r.status !== portal.CONSTANTS.CONNECTED) return;
-			connected = true;
-			if (stayConnected) {
-				portal.stayConnected();
-				window.sessionStorage.setItem('stayConnected', 'true'); // set flag local to autoconnect
+	let initalWidth;
+	let initalHeight;
+
+	let x;
+	let y;
+	const CACHED_ORIGIN = 'CACHED_ORIGIN';
+	let cacheOrigin;
+
+	const easing = quintOut;
+
+	// interpolate the dimensions
+	let calcWidth;
+
+	// interpolate the dimensions
+	let calcHeight;
+
+	onMount(async () => {
+		x = -10; // 10 px from the right on component mounted
+		y = 10;
+
+		const { ImmortalDB } = await import('immortal-db');
+		const cachedO = await ImmortalDB.get(CACHED_ORIGIN, null);
+
+		// get cached origin from last visit
+		origin = cachedO || origin;
+
+		let timer;
+
+		cacheOrigin = () => {
+			if (timer) {
+				clearTimeout(timer); // cancel any exisitng waiting
 			}
-			keys = await portal.getLoadedKeys();
-		});
-	};
+			timer = setTimeout(async () => {
+				timer = 0;
+				// update cache store
+				await ImmortalDB.set(CACHED_ORIGIN, origin);
+			}, 700);
+		};
+	});
 
-	const handleDisconnect = async () => {
-		window.sessionStorage.removeItem('stayConnected');
-		portal.disconnect().then((reply) => {
-			if (reply.status == portal.CONSTANTS.DISCONNECTED) connected = false;
-		});
-	};
+	$: if (origin && cacheOrigin) cacheOrigin();
 
-	//check auto connect
-	$: if (portalLoaded && sessionStorage.getItem('stayConnected') == 'true') handleConnect();
-
-	export let display = true;
 	function toggleDisplay() {
+		calcWidth = tweened(offsetWidth, {
+			duration,
+			easing
+		});
+		calcHeight = tweened(offsetHeight, {
+			duration,
+			easing
+		});
+
 		display = !display;
-		opacity = display ? openOpacity : closedOpacity;
+		$calcWidth = display ? initalWidth : 1; // tweening will make this transition instead of jump for us
+		$calcHeight = display ? initalHeight : 1;
 	}
 
 	let toggleStyle = '';
 	$: toggleStyle = display ? ';' : `height: 1px; width: 1px`;
+
+	$: if (display && offsetWidth && offsetHeight) {
+		console.log('Updating initalWidth to ', offsetWidth);
+		initalWidth = offsetWidth;
+		initalHeight = offsetHeight;
+	}
 </script>
 
 <Draggable bind:x bind:y>
-	<div class="container" style="--opacity: {opacity}%; top: {y}px; right: {-x}px">
+	<div class="wallet-container" style="--opacity: {opacity}%; top: {y}px; right: {-x}px">
 		<div class="mininav">
-			Wallet
+			Web3 Keychain
 			<Dragger /> <img class="toggle" src={toggle} alt="toggle" on:click={toggleDisplay} />
 		</div>
-		<div class="bottom-half" style={toggleStyle}>
-			<small><a href={origin} target="_blank" rel="noreferrer">Open in new window ↗️</a></small>
+		<div
+			class="bottom-half"
+			style="width: {$calcWidth}px; height: {$calcHeight}px;"
+			bind:offsetWidth
+			bind:offsetHeight
+		>
+			{#if origin}
+				<small
+					>Open <a href={origin} target="_blank" rel="noreferrer">{shortenURL(origin)} ↗️</a></small
+				>
+			{/if}
+			<!-- completely gratuitous transitions -->
 			{#if !connected}
-				<!-- completely gratuitous transitions -->
 				<div
-					out:slide={{
-						duration,
-						delay: duration,
-						easing: elasticOut
-					}}
 					in:scale={{
 						duration,
 						delay: duration,
 						easing: elasticOut
+					}}
+					out:slide={{
+						duration: duration * 2,
+						delay: 100
 					}}
 				>
 					<div class="header">
 						<input bind:value={origin} />
 					</div>
-					<button
-						disabled={!portalLoaded || connected}
-						class={!portalLoaded ? 'red' : connecting ? 'yellow' : 'ready'}
-						on:click|preventDefault={handleConnect}
-						>{!portalLoaded ? 'Loading...' : connecting ? 'Connecting' : 'Connect'}</button
-					><br />
-					<div style={connecting ? 'display: none;' : ''}>
-						<input type="checkbox" bind:checked={stayConnected} /> Stay Connected
-					</div>
-				</div>
-			{:else}
-				<!-- completely gratuitous transitions -->
-				<div
-					in:scale={{
-						duration,
-						delay: duration,
-						easing: elasticOut
-					}}
-					out:slide={{
-						duration,
-						delay: duration,
-						easing: elasticOut
-					}}
-				>
-					<button disabled={!connected} class="ready" on:click|preventDefault={handleDisconnect}
-						>Disconnect Wallet
-					</button><br />
-					<ListKeys {keys} />
 				</div>
 			{/if}
-
 			<!-- iframe slot -->
 			<div name="iframe-slot">
-				<slot {stayConnected} />
+				<slot />
 			</div>
 		</div>
 	</div>
@@ -131,7 +142,7 @@
 		overflow: hidden;
 	}
 
-	.container {
+	.wallet-container {
 		display: flex;
 		flex-direction: column;
 		justify-content: flex-start;
@@ -146,15 +157,13 @@
 		-moz-border-radius: 4px;
 		border-radius: 4px;
 		z-index: 99 !important;
-		min-width: var(--container-min-width);
-		min-height: var(--container-min-height);
 	}
 	.header {
 		display: flex;
 		flex-direction: column;
 		flex-wrap: nowrap;
 		justify-content: flex-start;
-		align-items: flex-end;
+		align-items: stretch;
 		align-content: stretch;
 	}
 	input {
@@ -162,29 +171,6 @@
 		padding: 0.4em 0.6em;
 		border-width: 1px;
 		border-style: inset;
-		max-width: fit-content;
-	}
-
-	button.yellow {
-		background-color: rgb(230, 208, 10, 0.82);
-	}
-	button.ready {
-		background-color: rgb(47, 137, 255, 0.82);
-	}
-	button.red {
-		background-color: rgb(196, 60, 60, 0.82);
-	}
-	button {
-		border: none;
-		color: white;
-		padding: 15px 32px;
-		text-align: center;
-		text-decoration: none;
-		display: inline-block;
-		font-size: 16px;
-		margin: 0.5em 0;
-		border-radius: 2px;
-		filter: drop-shadow(2px 4px 6px rgba(0, 0, 0, 0.1));
 	}
 	img.toggle {
 		width: 1.75em;
