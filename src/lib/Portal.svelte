@@ -7,7 +7,8 @@
 	import Controller from './Controller.svelte';
 
 	// export let encrypt;
-	export let origin = 'http://localhost:3444'; // https://wallet.peerpiper.io/ ?
+	export let portal; // allow users to bind to the portal
+	export let origin; // allow users to set the origin default
 
 	let portalLoaded = false;
 	let iframe: HTMLIFrameElement;
@@ -17,8 +18,7 @@
 	let offsetWidth;
 	let offsetHeight;
 
-	// allow users to bind to the portal
-	export let portal;
+	let forceDisplay = true; // force the portal to display if hidden when a popup happens
 
 	let aggregated = {
 		// inherit all super from remote handlers
@@ -27,15 +27,15 @@
 	};
 
 	$: if (connected) {
-		console.log('CONNECT, set portal up');
 		// remote.arweaveWalletAPI.connect(['SIGN_TRANSACTION']);
 		// set the arweave wallet to use our portal
 		window.arweaveWallet = remote.arweaveWalletAPI;
+		window.portal = remote;
 		window.addEventListener('arweaveWalletLoaded', async () => {
 			/** Handle ArConnect load event, in case user has another arweave wallet installed **/
 			window.arweaveWallet = remote.arweaveWalletAPI; // overwite again as needed
 		});
-		// only expose the fully aggregated API once connected, so consumers know when it's ready
+		// only expose the fully aggregated API on connect, so consumers know when it's ready
 		// but we can use the aggregated internally until then
 		portal = aggregated;
 	}
@@ -52,6 +52,10 @@
 			syncHeight();
 			portalLoaded = true;
 		}
+
+		if (event.data == CONSTANTS.CONNECTED) {
+			connected = true;
+		}
 	};
 
 	$: iframe && iframe.addEventListener('load', handleLoad);
@@ -65,11 +69,11 @@
 	function setMaxDimensions() {
 		iframe.contentWindow.postMessage(
 			{ msg: 'maxOffsetWidth', size: document.body.clientWidth },
-			'*'
+			origin
 		);
 		iframe.contentWindow.postMessage(
 			{ msg: 'maxOffsetHeight', size: document.body.clientHeight },
-			'*'
+			origin
 		);
 	}
 
@@ -88,12 +92,16 @@
 		// Transfer port2 to the iframe
 		iframe.contentWindow.postMessage('offsetHeightChannel', '*', [channel.port2]);
 	}
+
+	$: if (offsetHeight > 100) {
+		forceDisplay = true;
+	}
 </script>
 
 <svelte:window on:message={handleMessage} on:resize={setMaxDimensions} />
 
 {#if mounted}
-	<Controller {origin} bind:portalLoaded portal={aggregated} bind:connected>
+	<Controller bind:origin bind:display={forceDisplay} {connected}>
 		<!-- Portal {offsetWidth} x {offsetHeight}<br /> -->
 		<IFrameComp bind:iframe {origin} {offsetWidth} {offsetHeight} />
 	</Controller>
