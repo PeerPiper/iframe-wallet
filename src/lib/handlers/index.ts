@@ -1,5 +1,5 @@
 import * as CONSTANTS from './constants';
-import mod from '$lib/wasm/pkg/wasm_code_bg.wasm';
+import mod from '$lib/wasm/wallet/wasm_code_bg.wasm';
 import { browser } from '$app/env';
 
 // import plugins
@@ -29,7 +29,7 @@ let wasmWallet;
 let host;
 let connected = false;
 let DEFAULT_NAME = 'DEFAULT_NAME';
-const stayConnected = 'stayConnected';
+const STAY_CONNECTED = 'STAY_CONNECTED';
 
 let pre = new Map();
 let keys = new Map();
@@ -55,7 +55,7 @@ function assertReady() {
 export let handlers: { [Key: string]: Function } = {
 	initialize: async () => {
 		if (!host) return new Error('Host not set. Run setHost($page.host) first.');
-		wasmWallet = await import('$lib/wasm/pkg');
+		wasmWallet = await import('$lib/wasm/wallet/wasm_code');
 		await initModule(mod, wasmWallet.default);
 		return { status: CONSTANTS.INITIALIZED };
 	},
@@ -72,12 +72,12 @@ export let handlers: { [Key: string]: Function } = {
 		try {
 			// get confirm from svelte stores /  { get } from 'svelte/store';
 			let confirmed =
-				sessionStorage.getItem(stayConnected) == 'true' || (await get(confirm)('connect', origin));
+				sessionStorage.getItem(STAY_CONNECTED) == 'true' ||
+				(await get(confirm)('connect', { origin })); // use: params.origin
 
 			if (!confirmed) return false;
 			connected = true;
-			const ret = { status: CONSTANTS.CONNECTED, message: 'Wallet connected!' };
-			return ret;
+			return { status: CONSTANTS.CONNECTED, message: 'Wallet connected!' }
 		} catch (error) {
 			console.warn('connect error');
 			return false; // alternatively: { status: CONSTANTS.DISCONNECTED, message: 'Connection denied' };
@@ -85,12 +85,12 @@ export let handlers: { [Key: string]: Function } = {
 	},
 
 	stayConnected: () => {
-		window.sessionStorage.setItem(stayConnected, 'true');
+		window.sessionStorage.setItem(STAY_CONNECTED, 'true');
 	},
 
 	disconnect: () => {
 		connected = false;
-		window.sessionStorage.removeItem(stayConnected);
+		window.sessionStorage.removeItem(STAY_CONNECTED);
 		const ret = { status: CONSTANTS.DISCONNECTED, message: 'Wallet disconnected!' };
 		return ret;
 	},
@@ -171,12 +171,12 @@ export let handlers: { [Key: string]: Function } = {
 		return keys;
 	},
 
-	getPublicKey: (name): Uint8Array => {
-		return new Uint8Array(pre.get(name).public_key());
+	getPublicKey: (pre_name = DEFAULT_NAME): Uint8Array => {
+		return new Uint8Array(pre.get(pre_name).public_key());
 	},
 
-	getPublicKeyBase58: (name): string => {
-		return pre.get(name).public_key_base58();
+	getPublicKeyBase58: (pre_name = DEFAULT_NAME): string => {
+		return pre.get(pre_name).public_key_base58();
 	},
 
 	selfEncrypt: (data: Uint8Array, tag: Uint8Array, pre_name: string = DEFAULT_NAME) => {
@@ -239,3 +239,9 @@ export let handlers: { [Key: string]: Function } = {
 	},
 	arweaveWalletAPI
 };
+
+declare global {
+	interface Window {
+		portal: typeof handlers;
+	}
+}
