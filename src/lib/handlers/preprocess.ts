@@ -2,6 +2,7 @@
 import * as ArweaveUtils from './arweave/utils';
 
 export const maybePreprocess = (regularRPC, rpc, method, target) => {
+	// need special preprocessing because transaction needs to be prepared to sign
 	if (method == 'arweaveWalletAPI.sign') {
 		return async function () {
 			// only pass the actual signing to the wallet
@@ -9,7 +10,7 @@ export const maybePreprocess = (regularRPC, rpc, method, target) => {
 
 			const [transaction, options] = arguments;
 
-			console.log('signing', { transaction });
+			console.log('signing', { transaction }, { arguments });
 
 			// transaction: Transaction
 			// 	 chunks: {data_root: Uint8Array(32), chunks: Array(1), proofs: Array(1)}
