@@ -1,6 +1,6 @@
 {
 	"name": "iframe-wallet",
-	"version": "0.0.7",
+	"version": "0.0.8",
 	"main": "dist",
 	"scripts": {
 		"dev": "svelte-kit dev --port=3444",
@@ -20,7 +20,7 @@
 		"@sveltejs/adapter-vercel": "next",
 		"@sveltejs/kit": "next",
 		"base64-js": "^1.5.1",
-		"bignumber.js": "^9.0.1",
+		"bignumber.js": "^9.0.2",
 		"cli-color": "^0.3.2",
 		"clui": "^0.3.6",
 		"conf": "^10.1.1",
@@ -35,6 +35,7 @@
 		"svelte-check": "^2.2.6",
 		"svelte2tsx": "^0.4.8",
 		"sveltejs-adapter-ipfs": "^0.1.6",
+		"@sveltejs/adapter-static": "^1.0.0-next.24",
 		"tslib": "^2.3.1",
 		"typescript": "^4.4.3",
 		"url": "^0.11.0"
@@ -44,5 +45,9 @@
 		"buffer": "^6.0.3",
 		"immortal-db": "^1.1.0"
 	},
-	"license": "MIT+CC"
+	"license": "MIT+CC",
+	"engines": {
+		"npm": ">=8.0.0",
+		"node": ">=14.18.1"
+	}
 }
