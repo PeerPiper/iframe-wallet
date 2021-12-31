@@ -1,6 +1,8 @@
 import preprocess from 'svelte-preprocess';
 import vercelAdapter from '@sveltejs/adapter-vercel';
 import staticIPFSAdapter from 'sveltejs-adapter-ipfs';
+import adapter_static from '@sveltejs/adapter-static';
+
 import path from 'path';
 import { dirname } from 'path';
 import { fileURLToPath } from 'url';
@@ -42,10 +44,11 @@ const config = {
 			},
 			files: mm.matcher('!**/build.*')
 		},
-		adapter: staticIPFSAdapter({
-			removeBuiltInServiceWorkerRegistration: true,
-			injectPagesInServiceWorker: true
-		})
+		// adapter: staticIPFSAdapter({
+		// 	removeBuiltInServiceWorkerRegistration: true,
+		// 	injectPagesInServiceWorker: true
+		// })
+		adapter: adapter_static()
 		// adapter: vercelAdapter()
 	}
 };
