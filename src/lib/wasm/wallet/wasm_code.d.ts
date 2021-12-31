@@ -1,27 +1,27 @@
 /* tslint:disable */
 /* eslint-disable */
 /**
-* @returns {Keypair}
+* @returns {SimpleKeypair}
 */
-export function generate_ed25519_keypair(): Keypair;
+export function generate_ed25519_keypair(): SimpleKeypair;
+/**
+* @param {any} secret_key_bytes
+* @param {Uint8Array} message
+* @returns {Uint8Array}
+*/
+export function sign(secret_key_bytes: any, message: Uint8Array): Uint8Array;
+/**
+* @param {Uint8Array} public_key
+* @param {Uint8Array} message
+* @param {Uint8Array} signature
+* @returns {boolean}
+*/
+export function verify(public_key: Uint8Array, message: Uint8Array, signature: Uint8Array): boolean;
 /**
 * @param {any} secret
-* @returns {Keypair}
+* @returns {SimpleKeypair}
 */
-export function generate_ed25519_keypair_from_seed(secret: any): Keypair;
-/**
-*/
-export class Keypair {
-  free(): void;
-/**
-* @returns {any}
-*/
-  public(): any;
-/**
-* @returns {any}
-*/
-  secret(): any;
-}
+export function generate_ed25519_keypair_from_seed(secret: any): SimpleKeypair;
 /**
 */
 export class Proxcryptor {
@@ -51,11 +51,11 @@ export class Proxcryptor {
 */
   self_decrypt(encrypted_message: any): any;
 /**
-* @param {any} keypair
+* @param {any} public_key
 * @param {string} tag
 * @returns {any}
 */
-  generate_re_key(keypair: any, tag: string): any;
+  generate_re_key(public_key: any, tag: string): any;
 /**
 * @param {any} target_keypair
 * @param {any} encrypted_message
@@ -69,15 +69,30 @@ export class Proxcryptor {
 */
   re_decrypt(rem: any): any;
 }
+/**
+*/
+export class SimpleKeypair {
+  free(): void;
+/**
+* @returns {any}
+*/
+  public(): any;
+/**
+* @returns {any}
+*/
+  secret(): any;
+}
 
 export type InitInput = RequestInfo | URL | Response | BufferSource | WebAssembly.Module;
 
 export interface InitOutput {
   readonly memory: WebAssembly.Memory;
-  readonly __wbg_keypair_free: (a: number) => void;
-  readonly keypair_public: (a: number) => number;
-  readonly keypair_secret: (a: number) => number;
+  readonly __wbg_simplekeypair_free: (a: number) => void;
+  readonly simplekeypair_public: (a: number) => number;
+  readonly simplekeypair_secret: (a: number) => number;
   readonly generate_ed25519_keypair: () => number;
+  readonly sign: (a: number, b: number, c: number, d: number) => void;
+  readonly verify: (a: number, b: number, c: number, d: number, e: number, f: number) => number;
   readonly generate_ed25519_keypair_from_seed: (a: number) => number;
   readonly __wbg_proxcryptor_free: (a: number) => void;
   readonly proxcryptor_new: (a: number) => number;
@@ -90,6 +105,8 @@ export interface InitOutput {
   readonly proxcryptor_re_decrypt: (a: number, b: number) => number;
   readonly __wbindgen_malloc: (a: number) => number;
   readonly __wbindgen_realloc: (a: number, b: number, c: number) => number;
+  readonly __wbindgen_add_to_stack_pointer: (a: number) => number;
+  readonly __wbindgen_free: (a: number, b: number) => void;
   readonly __wbindgen_exn_store: (a: number) => void;
 }
 
