@@ -24,6 +24,7 @@
 
 	let data = 'some data here';
 	let tag = 'a tag for it';
+	let signature, match;
 
 	$: portal && console.log({ portal });
 
@@ -78,6 +79,20 @@
 		// @ts-ignore
 		bob_decrypted = await portal.reDecrypt(pre_name, re_encrypted_message);
 	};
+	async function handleSign(ev) {
+		const encoder = new TextEncoder();
+		const encoded = encoder.encode(data);
+		signature = await portal.ed25519.sign(encoded);
+		console.log({ signature });
+	}
+
+	async function handleVerify(ev) {
+		const encoder = new TextEncoder();
+		const encoded = encoder.encode(data);
+		const public_key = await portal.getPublicKey();
+		match = await portal.ed25519.verify(public_key, encoded, signature);
+		console.log({ match });
+	}
 </script>
 
 <!-- <img src={svg} alt="bookmark" class="tab" /> -->
@@ -121,6 +136,8 @@
 	<button disabled={!portal || !bob_keypair} on:click={() => handleReDecrypt('bob', rem)}
 		>Bob Decrypt</button
 	> -->
+	<button on:click={handleSign}>Sign this</button>
+	<button on:click={handleVerify} disabled={!signature}>Verify this</button>
 </p>
 
 {#if mounted}
