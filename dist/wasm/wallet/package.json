@@ -1,0 +1,17 @@
+{
+  "name": "wasm-code",
+  "collaborators": [
+    "Doug Anderson <douganderson444@gmail.com>"
+  ],
+  "version": "0.1.0",
+  "license": "MIT+CC",
+  "files": [
+    "wasm_code_bg.wasm",
+    "wasm_code.js",
+    "wasm_code.d.ts",
+    "LICENSE.md"
+  ],
+  "module": "wasm_code.js",
+  "types": "wasm_code.d.ts",
+  "sideEffects": false
+}
