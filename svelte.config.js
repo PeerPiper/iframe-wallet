@@ -38,7 +38,7 @@ const config = {
 			dir: 'dist',
 			exports: (filepath) => {
 				if (filepath.endsWith('.d.ts')) return false;
-				return mm.isMatch(filepath, ['!**/_*', '!**/internal/**']);
+				return mm.isMatch(filepath, ['!**/_*', '!**/internal/**', '!./wasm/**', '!./graphics/**']);
 			},
 			files: mm.matcher('!**/build.*')
 		},
