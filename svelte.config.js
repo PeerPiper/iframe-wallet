@@ -44,11 +44,11 @@ const config = {
 			},
 			files: mm.matcher('!**/build.*')
 		},
-		// adapter: staticIPFSAdapter({
-		// 	removeBuiltInServiceWorkerRegistration: true,
-		// 	injectPagesInServiceWorker: true
-		// })
-		adapter: adapter_static()
+		adapter: staticIPFSAdapter({
+			removeBuiltInServiceWorkerRegistration: true,
+			injectPagesInServiceWorker: true
+		})
+		// adapter: adapter_static()
 		// adapter: vercelAdapter()
 	}
 };
