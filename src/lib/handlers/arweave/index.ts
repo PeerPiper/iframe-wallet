@@ -108,6 +108,7 @@ export const arweaveWalletAPI = {
 		return true;
 	},
 	async getActiveAddress() {
+		console.log('getting active address');
 		try {
 			let jwk;
 			const kp = get(keypairs); // svelte stores
@@ -191,6 +192,10 @@ export const arweaveWalletAPI = {
 	},
 	async signature(data: Uint8Array, algorithm: any): Promise<string> {
 		// TODO
+	},
+	noop(): bool {
+		console.log('No Op');
+		return true;
 	}
 };
 
