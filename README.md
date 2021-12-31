@@ -2,9 +2,13 @@
 
 This wallet is not a browser extension.
 
-This is an experimental new type of cryptographic wallet itended to be embedded in an iFrame in the parent website (as opposed to the typical way that it's in a browser extension).
+Work in progress. Not yet ready for production. Feel free to contribute.
+
+This is an experimental new type of cryptographic wallet intended to be embedded in an iFrame in the parent website (as opposed to the typical way that it's in a browser extension).
 
 ## Background
+
+Read the [blog post](https://medium.com/peerpiper/peerpiper-introducing-a-next-gen-web3-keychain-storage-scheme-a06507725a5d).
 
 When a wallet is in a browser extension, there are many use restrictions for developers and barriers to entry for new userss:
 
