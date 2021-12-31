@@ -12,7 +12,7 @@ const __dirname = dirname(__filename);
 
 const SLASH = path.sep;
 
-const p = '../rust-projects/transform_recryption/wasm-code/pkg/wasm_code.js';
+const p = './src/lib/wasm/wallet/wasm_code.js';
 
 const fileName = path.resolve(`${__dirname}${SLASH}${p}`);
 
