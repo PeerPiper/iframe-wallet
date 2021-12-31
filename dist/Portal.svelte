@@ -13,21 +13,23 @@ let mounted;
 let offsetWidth;
 let offsetHeight;
 let forceDisplay = true; // force the portal to display if hidden when a popup happens
+let aggregated = {
+    // inherit all super from remote handlers
+    ...remote,
+    CONSTANTS // re-export for convenience
+};
 $: if (connected) {
     // remote.arweaveWalletAPI.connect(['SIGN_TRANSACTION']);
     // set the arweave wallet to use our portal
     window.arweaveWallet = remote.arweaveWalletAPI;
-    window.arweaveWallet.noop(); // Hack: I don't know how else to cancel out the capturedCalls accumulator in remote-rpc
     window.portal = remote;
     window.addEventListener('arweaveWalletLoaded', async () => {
         /** Handle ArConnect load event, in case user has another arweave wallet installed **/
         window.arweaveWallet = remote.arweaveWalletAPI; // overwite again as needed
-        window.arweaveWallet.noop(); // Hack: I don't know how else to cancel out the capturedCalls accumulator in remote-rpc
     });
-    // only expose API on connect, so consumers know when it's ready
-    // but we can use the internally until then
-    portal = remote;
-    portal.CONSTANTS = CONSTANTS;
+    // only expose the fully aggregated API on connect, so consumers know when it's ready
+    // but we can use the aggregated internally until then
+    portal = aggregated;
 }
 // Wait for the iframe to load, then configure it
 const handleLoad = async () => {
@@ -41,7 +43,6 @@ const handleMessage = async (event) => {
         portalLoaded = true;
     }
     if (event.data == CONSTANTS.CONNECTED) {
-        // console.log(`Rx'd CONNECTED from frame`);
         connected = true;
     }
 };

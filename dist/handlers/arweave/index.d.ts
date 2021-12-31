@@ -26,7 +26,7 @@ export declare const arweaveWalletAPI: {
         salt?: string;
     }): Promise<string>;
     signature(data: Uint8Array, algorithm: any): Promise<string>;
-    noop: () => void;
+    noop(): any;
 };
 declare global {
     interface Window {

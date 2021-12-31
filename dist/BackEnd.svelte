@@ -66,16 +66,18 @@
 	{#if handleGenerateKeypair}
 		<h1><img src={logo} alt="peerpiper" /> PeerPiper Web3 Wallet 🔑</h1>
 		<p>
-			This wallet is embedded in an iframe in the host's website, so the contexts are different and
+			Your keypair can be used with this wallet on any website that embeds it as a widget. Your keys
+			are stored in an iframe separate from the host's website, so the contexts are different and
 			keypairs are safe. Yet the two can talk via postMessage to encrypt & sign with your keypairs.
 		</p>
+		<p>Thi gives Web3 users both convenience and safety.</p>
 		{#if pending && $keypairs.size > 0}
 			Pending request from {pending}
 			<button on:click={syncKeys} class={'green'}>Authorize</button>
 		{/if}
 		{#if storedValue !== undefined && storedValue === null}
 			{#if $keypairs.size < 1}
-				<div class="submit">
+				<div class="submit attention">
 					No keypairs detected in this browser.
 					<button class={'green'} on:click={handleGenerateKeypair}>Create New Keypairs</button>
 					{creating}

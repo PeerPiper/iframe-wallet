@@ -194,7 +194,7 @@
 
 			// console.log({ method });
 
-			const leaf = (obj, path) => path.split('.').reduce((value, el) => value && value[el], obj);
+			// const leaf = (obj, path) => path.split('.').reduce((value, el) => value && value[el], obj);
 			// console.log(`method ${method} in handlers: `, leaf(handlers, method));
 
 			if (!(method in handlers) && !leaf(handlers, method)) {

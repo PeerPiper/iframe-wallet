@@ -5,5 +5,4 @@ node_modules
 /package
 .vercel_build_output/*
 demo/.vercel_build_output/*
-dist
 logs/*

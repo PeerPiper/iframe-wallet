@@ -2,9 +2,9 @@ import * as CONSTANTS from './constants';
 import mod from '../wasm/wallet/wasm_code_bg.wasm';
 import { browser } from '$app/env';
 // import plugins
+import { ed25519 } from './ed25519';
 import './rsa';
 import { arweaveWalletAPI } from './arweave';
-import { ed25519 } from './ed25519';
 // Svelte stuff
 import 'svelte';
 import { confirm, keypairs } from '../stores';

@@ -1,11 +1,12 @@
 {
   "name": "iframe-wallet",
-  "version": "0.0.6",
+  "version": "0.0.7",
+  "main": "dist",
   "devDependencies": {
     "@sveltejs/adapter-vercel": "next",
     "@sveltejs/kit": "next",
     "base64-js": "^1.5.1",
-    "bignumber.js": "^9.0.1",
+    "bignumber.js": "^9.0.2",
     "cli-color": "^0.3.2",
     "clui": "^0.3.6",
     "conf": "^10.1.1",

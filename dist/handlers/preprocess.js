@@ -7,7 +7,7 @@ export const maybePreprocess = (regularRPC, rpc, method, target) => {
             // only pass the actual signing to the wallet
             // do everything else here
             const [transaction, options] = arguments;
-            console.log('signing', { transaction });
+            console.log('signing', { transaction }, { arguments });
             // transaction: Transaction
             // 	 chunks: {data_root: Uint8Array(32), chunks: Array(1), proofs: Array(1)}
             // 	 data: Uint8Array(252) [101, 120, 112, 111, 114, 116, 32, 102, 117, 110, 99, 116, 105, 111, 110, 32, 104, 97, 110, 100, 108, 101, 40, 115, 116, 97, 116, 101, 44, 32, 97, 99, 116, 105, 111, 110, 41, 32, 123, 13, 10, 9, 105, 102, 32, 40, 97, 99, 116, 105, 111, 110, 46, 99, 97, 108, 108, 101, 114, 32, 33, 61, 61, 32, 115, 116, 97, 116, 101, 46, 111, 119, 110, 101, 114, 41, 32, 123, 13, 10, 9, 9, 114, 101, 116, 117, 114, 110, 32, 123, 32, 115, 116, 97, 116, 101, 32, 125, 59, 32, …]
