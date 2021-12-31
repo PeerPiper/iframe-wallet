@@ -1,6 +1,7 @@
 {
 	"name": "iframe-wallet",
 	"version": "0.0.7",
+	"main": "dist",
 	"scripts": {
 		"dev": "svelte-kit dev --port=3444",
 		"build": "node fix-new-urls.js && svelte-kit build",
