@@ -57,6 +57,7 @@ export let handlers: { [Key: string]: Function } = {
 		if (!host) return new Error('Host not set. Run setHost($page.host) first.');
 		wasmWallet = await import('$lib/wasm/wallet/wasm_code');
 		await initModule(mod, wasmWallet.default);
+		ed25519.setWasmWallet(wasmWallet);
 		return { status: CONSTANTS.INITIALIZED };
 	},
 
@@ -77,7 +78,7 @@ export let handlers: { [Key: string]: Function } = {
 
 			if (!confirmed) return false;
 			connected = true;
-			return { status: CONSTANTS.CONNECTED, message: 'Wallet connected!' }
+			return { status: CONSTANTS.CONNECTED, message: 'Wallet connected!' };
 		} catch (error) {
 			console.warn('connect error');
 			return false; // alternatively: { status: CONSTANTS.DISCONNECTED, message: 'Connection denied' };
@@ -101,10 +102,10 @@ export let handlers: { [Key: string]: Function } = {
 	},
 
 	generateEd25519Keypair: () => {
-		if (!assertReady())
-			return new Error(
-				'Wallet not connected or initialized. Run connect() and await initialize() first.'
-			);
+		// if (!assertReady())
+		// 	return new Error(
+		// 		'Wallet not connected or initialized. Run connect() and await initialize() first.'
+		// 	);
 		let keypair = wasmWallet.generate_ed25519_keypair();
 		let publicKey = keypair.public();
 		let secretKey = keypair.secret();
@@ -201,7 +202,7 @@ export let handlers: { [Key: string]: Function } = {
 		}
 	},
 
-	generateReKey: (targetPublicKey, tag, pre_name = DEFAULT_NAME) => {
+	generateReKey: (targetPublicKey: Uint8Array, tag: string, pre_name: string = DEFAULT_NAME) => {
 		if (!assertReady())
 			return new Error(
 				'Wallet not connected or initialized. Run connect() and await initialize() first.'
@@ -212,7 +213,7 @@ export let handlers: { [Key: string]: Function } = {
 		return re_key;
 	},
 
-	reEncrypt: (targetPublicKey, encrypted_message, re_key) => {
+	reEncrypt: (targetPublicKey: Uint8Array, encrypted_message, re_key) => {
 		if (!assertReady())
 			return new Error(
 				'Wallet not connected or initialized. Run connect() and await initialize() first.'
@@ -237,7 +238,8 @@ export let handlers: { [Key: string]: Function } = {
 		let textDecoder = new TextDecoder();
 		return textDecoder.decode(new Uint8Array(decrypted));
 	},
-	arweaveWalletAPI
+	arweaveWalletAPI,
+	ed25519
 };
 
 declare global {

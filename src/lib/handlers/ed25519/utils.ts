@@ -22,7 +22,7 @@ export const privateKeyJwkFromEd25519bytes = async (
 	};
 };
 
-const publicKeyJwkFromPublicKey = async (ed25519publicKey: Uint8Array) => {
+export const publicKeyJwkFromPublicKey = async (ed25519publicKey: Uint8Array) => {
 	const jwk = {
 		crv: 'Ed25519',
 		x: B64.fromByteArray(ed25519publicKey),
