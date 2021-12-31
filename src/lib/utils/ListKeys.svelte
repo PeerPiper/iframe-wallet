@@ -44,15 +44,16 @@
 	</div>
 {/if}
 
-<style lang="scss" type="text/scss">
+<style>
 	.card {
 		margin: 1em 0em;
-		background-color: white;
+		background-color: rgb(35, 35, 35);
 		padding: 1.5em;
 		-webkit-border-radius: 4px;
 		-moz-border-radius: 4px;
 		border-radius: 4px;
-		box-shadow: 2px 2px 6px rgba(74, 159, 70, 0.7);
+		box-shadow: 2px 2px 6px rgba(14, 255, 2, 0.7);
+		color: #0eff02;
 	}
 	.keylist {
 		display: flex;
