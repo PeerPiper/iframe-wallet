@@ -84,9 +84,6 @@
 	onMount(async () => {
 		// TODO: Split RPC into local only and remote access?
 		isTopWindow = () => window == window.top;
-
-		// var topUrl = (window.location != window.parent.location) ? document.referrer : document.location.href;
-		// var topUrl = (parent !== window) ? document.referrer : document.location;
 		topUrl = self === top ? document.URL : document.referrer;
 
 		/** This wallet design is all about getting keys into/from the browser context storage So we need to check storage, load, or import as require. Use Immortal to provide triple redundancy against deletion loss */
@@ -100,16 +97,30 @@
 		await getStoredKeys();
 
 		// Initialize the wasm in the keychain
-		handlers.initialize().then(async (r) => {
-			if (!isTopWindow() && r.status == CONSTANTS.INITIALIZED)
-				window.parent.postMessage(`${CONSTANTS.INITIALIZED}`, '*'); // we're in an iframe, window.parent will receive the initialized message so it knows it can now interact with the wallet handlers
+		const initResp = await handlers.initialize();
 
+		if (!isTopWindow() && initResp.status == CONSTANTS.INITIALIZED)
+			window.parent.postMessage(`${CONSTANTS.INITIALIZED}`, '*'); // we're in an iframe, window.parent will receive the initialized message so it knows it can now interact with the wallet handlers
+
+		importKeys = async (keyArray) => {
+			// TODO: Password protect first
+			const promise1 = ImmortalDB.set(SAVED_KEYS, JSON.stringify(keyArray));
+			const promise2 = handlers.importKeypairs(keyArray);
+			await Promise.all([promise1, promise2]); // parallel processing
+			await getStoredKeys(); // set storedValue
+
+			$keypairs = $keypairs;
+			connect(); // import should trigger a connect
+		};
+
+		connect(); // connect by default?
+
+		async function connect() {
 			let allowed = await handlers.connectWallet(topUrl);
 			if (!allowed) return; // do we want user to click connect? Or do it for them?
-			handleConnect();
-		});
-
-		function handleConnect() {
+			handleConnected();
+		}
+		function handleConnected() {
 			connected = true;
 
 			window?.parent?.postMessage(CONSTANTS.CONNECTED, '*'); // send window.parent message so it knows it can now interact with the wallet handlers
@@ -137,16 +148,6 @@
 			window.sessionStorage.removeItem('stayConnected');
 			const reply = handlers.disconnect();
 			if (reply.status == CONSTANTS.DISCONNECTED) connected = false;
-		};
-
-		importKeys = async (keyArray) => {
-			// TODO: Password protect first
-			console.log('Importing keys: ', keyArray);
-			const promise1 = ImmortalDB.set(SAVED_KEYS, JSON.stringify(keyArray));
-			const promise2 = handlers.importKeypairs(keyArray);
-			await Promise.all([promise1, promise2]); // parallel processing
-
-			$keypairs = $keypairs;
 		};
 
 		/**
@@ -191,7 +192,9 @@
 			// methods only after this point
 			if (!method) return;
 
-			const leaf = (obj, path) => path.split('.').reduce((value, el) => value && value[el], obj);
+			// console.log({ method });
+
+			// const leaf = (obj, path) => path.split('.').reduce((value, el) => value && value[el], obj);
 			// console.log(`method ${method} in handlers: `, leaf(handlers, method));
 
 			if (!(method in handlers) && !leaf(handlers, method)) {
@@ -204,12 +207,12 @@
 			 */
 			try {
 				let fn = handlers[method] || leaf(handlers, method);
-				console.log({ handlers }, { fn });
+				// console.log( fn );
 				let args = parameters ? parameters : [];
 				if (method === 'connectWallet') args = [topUrl]; // connectWallet is the only method that needs the origin passed in? {...args, origin: event.origin}
 				// console.log({ fn }, fn?.name, { args });
 				const result = await fn(...args);
-				if (method === 'connectWallet' && result.status == CONSTANTS.CONNECTED) handleConnect();
+				if (method === 'connectWallet' && result.status == CONSTANTS.CONNECTED) handleConnected();
 				reply(result);
 			} catch (error) {
 				let err = new Error(`RPC error calling ${method}(${parameters.toString()})`);
@@ -230,7 +233,7 @@
 		<!-- offset: {offsetWidth} x {offsetHeight}<br /> -->
 		<!-- Max offset: {maxOffsetWidth} x {maxOffsetHeight}<br /> -->
 		<!-- Confirmation Section -->
-		{#if active}
+		{#if active && !!storedValue}
 			<div class="active">
 				<svelte:component
 					this={active.component}
@@ -246,17 +249,25 @@
 				{storedValue}
 				{connected}
 				{topUrl}
-				{stayConnected}
+				bind:stayConnected
 				{handleDisconnect}
 				{importKeys}
 				{OPENED_SIGNAL}
 				{KEYS_SYNC}
 			/>
 		{:else}
-			<BackEnd {handlers} {importKeys} {storedValue} {getStoredKeys} {OPENED_SIGNAL} {KEYS_SYNC} />
+			<BackEnd
+				{handlers}
+				{importKeys}
+				{storedValue}
+				{getStoredKeys}
+				bind:stayConnected
+				{OPENED_SIGNAL}
+				{KEYS_SYNC}
+			/>
 		{/if}
 
-		{#if connected && publicKeys}
+		{#if publicKeys}
 			<ListKeys keys={publicKeys} />
 			<!-- TODO: Export keys as desired
 			{#if $keypairs.size > 0}
