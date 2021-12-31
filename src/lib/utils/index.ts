@@ -1,4 +1,4 @@
-export const shorten = (key: string, start = 5, end = 5) => {
+export const shorten = (key: string, start = 6, end = 6) => {
 	return key.slice(0, start) + '...' + key.slice(key.length - end, key.length);
 };
 
