@@ -13,7 +13,6 @@
 		name: tag.get('name', { decode: true, string: true }),
 		val: tag.get('value', { decode: true, string: true })
 	}));
-	console.log({ tags });
 
 	$: props && dataToSign && transaction && checkTx();
 
