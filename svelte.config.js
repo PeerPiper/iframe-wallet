@@ -15,7 +15,9 @@ const __dirname = dirname(__filename);
 const config = {
 	// Consult https://github.com/sveltejs/svelte-preprocess
 	// for more information about preprocessors
-	preprocess: preprocess(),
+	preprocess: preprocess({
+		preserve: ['module'] // https://github.com/sveltejs/svelte-preprocess/issues/261
+	}),
 
 	kit: {
 		// hydrate the <div id="svelte"> element in src/app.html
