@@ -40,7 +40,8 @@ const config = {
 			dir: 'dist',
 			exports: (filepath) => {
 				if (filepath.endsWith('.d.ts')) return false;
-				return mm.isMatch(filepath, ['!**/_*', '!**/internal/**', '!./wasm/**', '!./graphics/**']);
+				if (filepath == 'index.js') return true;
+				return mm.isMatch(filepath, ['App.svelte', 'Portal.svelte']);
 			},
 			files: mm.matcher('!**/build.*')
 		},
