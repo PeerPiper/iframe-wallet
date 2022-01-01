@@ -1,4 +1,5 @@
-import * as B64 from 'base64-js';
+// import * as B64 from 'base64-js';
+import { encode as fromByteArray, decode as toByteArray } from '@stablelib/base64';
 import deepHash from './deepHash';
 // import * as BigNumber from 'bignumber.js';
 import BigNumber from 'bignumber.js';
@@ -62,11 +63,11 @@ export function stringToB64Url(string: string): string {
 }
 
 export function b64UrlToBuffer(b64UrlString: string): Uint8Array {
-	return new Uint8Array(B64.toByteArray(b64UrlDecode(b64UrlString)));
+	return new Uint8Array(toByteArray(b64UrlDecode(b64UrlString)));
 }
 
 export function bufferTob64(buffer: Uint8Array): string {
-	return B64.fromByteArray(new Uint8Array(buffer));
+	return fromByteArray(new Uint8Array(buffer));
 }
 
 export function bufferTob64Url(buffer: Uint8Array): string {
