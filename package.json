@@ -20,7 +20,6 @@
 		"@sveltejs/adapter-vercel": "next",
 		"@sveltejs/kit": "next",
 		"base64-js": "^1.5.1",
-		"bignumber.js": "^9.0.2",
 		"cli-color": "^0.3.2",
 		"clui": "^0.3.6",
 		"conf": "^10.1.1",
@@ -43,7 +42,8 @@
 	"type": "module",
 	"dependencies": {
 		"buffer": "^6.0.3",
-		"immortal-db": "^1.1.0"
+		"immortal-db": "^1.1.0",
+		"bignumber.js": "^9.0.2"
 	},
 	"license": "MIT+CC",
 	"engines": {
