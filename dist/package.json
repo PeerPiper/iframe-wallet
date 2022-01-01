@@ -1,12 +1,11 @@
 {
   "name": "iframe-wallet",
-  "version": "0.0.7",
+  "version": "0.0.9",
   "main": "dist",
   "devDependencies": {
     "@sveltejs/adapter-vercel": "next",
     "@sveltejs/kit": "next",
     "base64-js": "^1.5.1",
-    "bignumber.js": "^9.0.2",
     "cli-color": "^0.3.2",
     "clui": "^0.3.6",
     "conf": "^10.1.1",
@@ -21,6 +20,7 @@
     "svelte-check": "^2.2.6",
     "svelte2tsx": "^0.4.8",
     "sveltejs-adapter-ipfs": "^0.1.6",
+    "@sveltejs/adapter-static": "^1.0.0-next.24",
     "tslib": "^2.3.1",
     "typescript": "^4.4.3",
     "url": "^0.11.0"
@@ -28,52 +28,19 @@
   "type": "module",
   "dependencies": {
     "buffer": "^6.0.3",
-    "immortal-db": "^1.1.0"
+    "immortal-db": "^1.1.0",
+    "bignumber.js": "^9.0.2"
   },
   "license": "MIT+CC",
+  "engines": {
+    "npm": ">=8.0.0",
+    "node": ">=14.18.1"
+  },
   "exports": {
     "./package.json": "./package.json",
     "./App.svelte": "./App.svelte",
-    "./BackEnd.svelte": "./BackEnd.svelte",
-    "./Controller.svelte": "./Controller.svelte",
-    "./FrontEnd.svelte": "./FrontEnd.svelte",
-    "./graphics/Draggable.svelte": "./graphics/Draggable.svelte",
-    "./graphics/Dragger.svelte": "./graphics/Dragger.svelte",
-    "./graphics/mini-svg-bookmark.svg": "./graphics/mini-svg-bookmark.svg",
-    "./graphics/pannable": "./graphics/pannable.js",
-    "./graphics/PeerPiper-Bookmark-90-Trans.svg": "./graphics/PeerPiper-Bookmark-90-Trans.svg",
-    "./graphics/peerpiper-logo.svg": "./graphics/peerpiper-logo.svg",
-    "./graphics/toggle.svg": "./graphics/toggle.svg",
-    "./handlers/arweave/ConfirmSign.svelte": "./handlers/arweave/ConfirmSign.svelte",
-    "./handlers/arweave/deepHash": "./handlers/arweave/deepHash.js",
-    "./handlers/arweave": "./handlers/arweave/index.js",
-    "./handlers/arweave/utils": "./handlers/arweave/utils.js",
-    "./handlers/confirm/Connect.svelte": "./handlers/confirm/Connect.svelte",
-    "./handlers/confirm/DefaultConfirmation.svelte": "./handlers/confirm/DefaultConfirmation.svelte",
-    "./handlers/confirm": "./handlers/confirm/index.js",
-    "./handlers/constants": "./handlers/constants.js",
-    "./handlers/ed25519": "./handlers/ed25519/index.js",
-    "./handlers/ed25519/utils": "./handlers/ed25519/utils.js",
-    "./handlers": "./handlers/index.js",
-    "./handlers/preprocess": "./handlers/preprocess.js",
-    "./handlers/proxcryptor": "./handlers/proxcryptor/index.js",
-    "./handlers/rsa": "./handlers/rsa/index.js",
-    "./handlers/solana": "./handlers/solana/index.js",
-    "./IFrame.svelte": "./IFrame.svelte",
     ".": "./index.js",
-    "./Portal.svelte": "./Portal.svelte",
-    "./remote-rpc": "./remote-rpc.js",
-    "./stores": "./stores.js",
-    "./utils/Accordion.svelte": "./utils/Accordion.svelte",
-    "./utils": "./utils/index.js",
-    "./utils/ListKeys.svelte": "./utils/ListKeys.svelte",
-    "./wasm/utils": "./wasm/utils.js",
-    "./wasm/wallet/LICENSE.md": "./wasm/wallet/LICENSE.md",
-    "./wasm/wallet/package.json": "./wasm/wallet/package.json",
-    "./wasm/wallet/README.md": "./wasm/wallet/README.md",
-    "./wasm/wallet/wasm_code": "./wasm/wallet/wasm_code.js",
-    "./wasm/wallet/wasm_code_bg": "./wasm/wallet/wasm_code_bg.js",
-    "./wasm/wallet/wasm_code_bg.wasm": "./wasm/wallet/wasm_code_bg.wasm"
+    "./Portal.svelte": "./Portal.svelte"
   },
   "svelte": "./index.js"
 }
