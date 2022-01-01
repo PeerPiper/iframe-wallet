@@ -69,8 +69,7 @@
 		<button
 			disabled={connecting}
 			class={connecting ? 'yellow' : 'ready'}
-			on:click|preventDefault={openTwinWindow}
-			>{connecting ? 'Connecting' : 'Connect to Wallet'}</button
+			on:click|preventDefault={openTwinWindow}>{connecting ? 'Connecting' : 'Connect'}</button
 		><br />
 		<div style={connecting ? 'display: none;' : ''}>
 			<input type="checkbox" bind:checked={stayConnected} /> Stay Connected
