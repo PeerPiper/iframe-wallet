@@ -1,1 +1,2 @@
-export { default as Portal } from './Portal.svelte';
+import Portal from './Portal.svelte';
+export { Portal };
