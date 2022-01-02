@@ -1,3 +1,5 @@
+<svelte:options tag={null} />
+
 <script>
 	import { pannable } from './pannable.js';
 	import { spring } from 'svelte/motion';

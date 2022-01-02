@@ -1,3 +1,5 @@
+<svelte:options tag="web3-wallet-portal" />
+
 <script lang="ts">
 	import { onMount } from 'svelte';
 

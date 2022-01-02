@@ -1,3 +1,5 @@
+<svelte:options tag={null} />
+
 <svg
 	width="20"
 	height="20"

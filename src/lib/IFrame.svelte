@@ -1,3 +1,5 @@
+<svelte:options tag={null} />
+
 <script>
 	import { tweened } from 'svelte/motion';
 	import { elasticOut, quintOut } from 'svelte/easing';
