@@ -1,7 +1,8 @@
-import * as B64 from 'base64-js';
+// import * as B64 from 'base64-js';
+import { encode as fromByteArray, decode as toByteArray } from '@stablelib/base64';
 
 export function jwkToSecretBytes(jwk) {
-	return B64.toByteArray(jwk.d);
+	return toByteArray(jwk.d);
 }
 
 // private JWK is simply the private key as d and x
@@ -11,8 +12,8 @@ export const privateKeyJwkFromEd25519bytes = async (
 ) => {
 	const jwk = {
 		crv: 'Ed25519',
-		d: B64.fromByteArray(ed25519secretKey), // secret key
-		x: B64.fromByteArray(ed25519publicKey), // public key
+		d: fromByteArray(ed25519secretKey), // secret key
+		x: fromByteArray(ed25519publicKey), // public key
 		kty: 'OKP'
 	};
 	const kid = await getKid(jwk);
@@ -25,7 +26,7 @@ export const privateKeyJwkFromEd25519bytes = async (
 export const publicKeyJwkFromPublicKey = async (ed25519publicKey: Uint8Array) => {
 	const jwk = {
 		crv: 'Ed25519',
-		x: B64.fromByteArray(ed25519publicKey),
+		x: fromByteArray(ed25519publicKey),
 		kty: 'OKP' // EC is only P-256 etc. Ex: https://github.com/sicpa-dlab/didcomm-rust/blob/main/src/utils/did.rs#L37 && https://github.com/panva/jose/blob/main/src/jwk/thumbprint.ts#L44
 	};
 	const kid = await getKid(jwk);
@@ -45,7 +46,7 @@ const getKid = async (jwk) => {
 	const uint8array = new TextEncoder('utf-16').encode(canonicalize(copy));
 	const digest = await crypto.subtle.digest('SHA-256', uint8array);
 
-	return B64.fromByteArray(new Uint8Array(digest));
+	return fromByteArray(new Uint8Array(digest));
 };
 
 function canonicalize(object) {
