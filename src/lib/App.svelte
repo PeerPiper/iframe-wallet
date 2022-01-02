@@ -280,20 +280,25 @@
 		{/if}
 		<footer>
 			<smaller
-				><img src={logo} alt="peerpiper" /> Powered by
-				<a href="https://PeerPiper.io" target="_blank" rel="noreferrer">PeerPiper</a></smaller
+				><img src={logo} alt="peerpiper" /> 
+				<div class='powered'>Powered by
+				<a href="https://PeerPiper.io" target="_blank" rel="noreferrer">PeerPiper</a></div></smaller
 			>
 		</footer>
 	</main>
 </div>
 
 <style>
+	.powered{
+		background-color: #fafbfd;
+	}
 	footer {
 		display: flex;
 		flex-direction: column;
 		justify-content: center;
 		align-items: center;
 		padding: 0.75em;
+		
 	}
 	.wrapper {
 		padding: 0px;
