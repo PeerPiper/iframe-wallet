@@ -1,6 +1,6 @@
 {
 	"name": "iframe-wallet",
-	"version": "0.0.10",
+	"version": "0.0.11",
 	"main": "dist",
 	"scripts": {
 		"dev": "svelte-kit dev --port=3444",
@@ -17,7 +17,7 @@
 		"ipfs:deploy": "npm run build && node --experimental-specifier-resolution=node --trace-warnings ./ipfs-deploy.js"
 	},
 	"devDependencies": {
-		"@sveltejs/adapter-static": "^1.0.0-next.24",
+		"@sveltejs/adapter-static": "next",
 		"@sveltejs/adapter-vercel": "next",
 		"@sveltejs/kit": "next",
 		"base64-js": "^1.5.1",
@@ -34,7 +34,7 @@
 		"svelte": "^3.42.6",
 		"svelte-check": "^2.2.6",
 		"svelte2tsx": "^0.4.8",
-		"sveltejs-adapter-ipfs": "^0.1.6",
+		"sveltejs-adapter-ipfs": "^0.1.10",
 		"tslib": "^2.3.1",
 		"typescript": "^4.4.3",
 		"url": "^0.11.0"
