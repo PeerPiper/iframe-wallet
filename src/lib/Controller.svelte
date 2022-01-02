@@ -1,3 +1,5 @@
+<svelte:options tag={null} />
+
 <script>
 	import { onMount } from 'svelte';
 	import { elasticOut, quintOut } from 'svelte/easing';

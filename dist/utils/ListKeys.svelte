@@ -1,3 +1,5 @@
+<svelte:options tag={null} />
+
 <script>
 	// show the user's keys
 	// parse out the JWKs into types: RSA and Ed25519 according to JWK
