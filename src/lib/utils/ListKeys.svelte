@@ -1,4 +1,4 @@
-<svelte:options tag={null} />
+<svelte:options tag={'web3-wallet-listkeys'} />
 
 <script>
 	// show the user's keys

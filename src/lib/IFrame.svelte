@@ -1,4 +1,4 @@
-<svelte:options tag={null} />
+<svelte:options tag={'web3-wallet-iframe'} />
 
 <script>
 	import { tweened } from 'svelte/motion';

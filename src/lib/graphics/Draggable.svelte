@@ -1,4 +1,4 @@
-<svelte:options tag={null} />
+<svelte:options tag={'web3-wallet-draggable'} />
 
 <script>
 	import { pannable } from './pannable.js';
