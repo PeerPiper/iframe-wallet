@@ -1,12 +1,25 @@
 <script>
 	import { onMount } from 'svelte';
-	import Portal from '../../../../iframe-wallet/src/lib/Portal.svelte';
+	// import Portal from '../../../../iframe-wallet/src/lib/Portal.svelte';
 	import svg from '../../../../iframe-wallet/src/lib/graphics/mini-svg-bookmark.svg';
+	// import Portal from 'iframe-wallet/dist/Portal.svelte'; // from package manager
 
+	let Portal;
 	let mounted;
+	let el;
+
 	onMount(async () => {
+		const portal = await import('../../../../iframe-wallet/dist/Portal.svelte'); // from file system
+		console.log({ portal });
+		Portal = portal.default;
 		mounted = true;
+
+		// @ts-ignore
 	});
+
+	$: if (el) portal = el.portal;
+	$: if (el?.portal) console.log('The portal accessor variable is', { portal });
+
 	// Need these for Portal Component
 	let portal;
 	let origin = 'http://localhost:3444/'; // optional to change default
@@ -94,6 +107,10 @@
 		console.log({ match });
 	}
 </script>
+
+<svelte:head />
+
+<div id="walletportal" />
 
 <!-- <img src={svg} alt="bookmark" class="tab" /> -->
 
