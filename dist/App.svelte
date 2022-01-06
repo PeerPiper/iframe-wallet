@@ -302,7 +302,7 @@
 		padding: 0.75em;
 	}
 	footer > smaller {
-		display: block;
+		display: inline-flex;
 	}
 	.wrapper {
 		padding: 0px;

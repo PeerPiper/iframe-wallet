@@ -1,5 +1,3 @@
-<!-- <svelte:options tag={'web3-wallet-dragger'} /> -->
-
 <svg
 	width="20"
 	height="20"

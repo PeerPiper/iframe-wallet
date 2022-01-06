@@ -1,2 +1,2 @@
 import Portal from './Portal.svelte';
-export { Portal as default };
+export default Portal;

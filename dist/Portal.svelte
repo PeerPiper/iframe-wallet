@@ -1,4 +1,3 @@
-<!-- <svelte:options tag="web3-wallet-portal" /> -->
 <script >import { onMount, createEventDispatcher } from 'svelte';
 import IFrameComp from './IFrame.svelte';
 import * as CONSTANTS from './handlers/constants';

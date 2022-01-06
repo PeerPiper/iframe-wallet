@@ -1,4 +1,3 @@
-<!-- <svelte:options tag={'web3-wallet-listkeys'} /> -->
 <script>
 	// show the user's keys
 	// parse out the JWKs into types: RSA and Ed25519 according to JWK
