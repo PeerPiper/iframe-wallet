@@ -1,5 +1,3 @@
-<svelte:options tag={'web3-wallet-iframe'} />
-
 <script>
 	import { tweened } from 'svelte/motion';
 	import { elasticOut, quintOut } from 'svelte/easing';

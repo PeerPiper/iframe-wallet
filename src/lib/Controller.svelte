@@ -1,5 +1,3 @@
-<svelte:options tag={'web3-wallet-controller'} />
-
 <script>
 	import { onMount } from 'svelte';
 	import { elasticOut, quintOut } from 'svelte/easing';
