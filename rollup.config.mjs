@@ -8,6 +8,8 @@ import sveltePreprocess from 'svelte-preprocess';
 import typescript from '@rollup/plugin-typescript';
 import { wasm } from '@rollup/plugin-wasm';
 import svg from 'rollup-plugin-svg';
+import json from '@rollup/plugin-json';
+import inlineSvg from 'rollup-plugin-inline-svg';
 
 const production = !process.env.ROLLUP_WATCH;
 const formats = ['iife', 'umd', 'es']; //
@@ -17,28 +19,37 @@ export default components.map((component) => ({
 	input: `src/lib/${component}.svelte`,
 	output: formats.map((format) => ({
 		name: component,
-		file: `build/components/${format}/${component}.min.js`,
+		file: `src/lib/bundled/${format}/${component}.min.js`, // gets added to deployments & package manager this way
 		// dir: `build/components/`,
 		format,
 		inlineDynamicImports: true
+		// sourcemap: true
 	})),
 	plugins: [
-		typescript({ sourceMap: !production }),
+		json(),
+		inlineSvg({}),
+		typescript({
+			sourceMap: !production
+		}),
 		wasm(),
 		svg(),
 		svelte({
-			compilerOptions: { dev: !production, customElement: true },
+			compilerOptions: {
+				dev: !production
+				// customElement: true
+			},
 			preprocess: sveltePreprocess({
-				sourceMap: true
-			})
+				sourceMap: !production
+			}),
+			emitCss: false // inline
 		}),
-		css({ output: 'bundle.css' }),
+		css({ output: 'bundle.css' }), // not needed if emitCss: false
 		resolve({
 			browser: true,
 			dedupe: ['svelte']
 		}),
-		commonjs(),
-		terser()
+		commonjs()
+		// terser()
 	],
 	watch: {
 		clearScreen: false
