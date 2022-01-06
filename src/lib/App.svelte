@@ -301,6 +301,9 @@
 		align-items: center;
 		padding: 0.75em;
 	}
+	footer > smaller {
+		display: inline-flex;
+	}
 	.wrapper {
 		padding: 0px;
 		margin: 0px;
