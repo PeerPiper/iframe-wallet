@@ -1,11 +1,12 @@
 import { get } from 'svelte/store';
 import { keypairs } from '../../stores';
 import { publicKeyJwkFromPublicKey, jwkToSecretBytes } from './utils';
-import { handlers } from '../';
 let wasmWallet;
+let getPublicKey;
 export const ed25519 = {
-    setWasmWallet: (w) => {
+    setWasmWallet: (w, publicKeyGetter) => {
         wasmWallet = w;
+        getPublicKey = publicKeyGetter;
     },
     // TODO: Separate the key types, ed25519, RSA, BLS, etc
     generateKeypair: () => {
@@ -18,7 +19,7 @@ export const ed25519 = {
     },
     sign: async (data) => {
         const message_bytes = new Uint8Array(data); // new Uint8Array();
-        const pk = handlers.getPublicKey();
+        const pk = getPublicKey();
         const jwk = await publicKeyJwkFromPublicKey(pk);
         const kp = get(keypairs); // get keypairs from svelte stores manually since this is not a svelte file
         const secret_key = kp.get(jwk.kid);

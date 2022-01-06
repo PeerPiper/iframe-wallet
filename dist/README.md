@@ -55,6 +55,73 @@ npm run dev
 
 ## Dev Notes
 
+### Use in Svelte Apps
+
+For non-Svelte App use, see Custom Elements note below.
+
+For Svelte apps, import the Portal Component and instantiate it in your app
+
+```js
+<script>
+	import Portal from 'iframe-wallet'
+
+	let portal
+
+	function handleSign(){
+		portal.ed25519.sign(data)
+	}
+</script>
+
+<Portal origin={'https://iframe-wallet.pages.dev'} bind:portal />
+
+
+
+```
+
+### Building Portal Component
+
+This package uses [Custom Elements](https://svelte.dev/docs#run-time-custom-element-api) for the Portal build.
+
+At this time, SvelteKit doesn't support this, so we use Rollup to build the Portal.svelte component into `<web3-wallet-portal></web3-wallet-portal>` custom element that can be used by HTML websites or any other framework, such as React, Vue, etc.
+
+Read more about custom elements [here](https://custom-elements-everywhere.com/).
+
+This build is done by npm run `build:components` which runs Rollups and outputs the build and bundled components as Javascript classes in `build/components`
+
+These custom elements can then be imported by other website using
+
+```html
+<head>
+	<!-- UMD -->
+	<script src="https://iframe-wallet.pages.dev/components/umd/Portal.min.js"></script>
+
+	<!-- IIFE -->
+	<!-- <script defer src='https://iframe-wallet.pages.dev/components/iife/Portal.min.js'></script> -->
+
+	<!-- ES -->
+	<!-- <script type="module" src='https://iframe-wallet.pages.dev/components/es/Portal.min.js'></script> -->
+</head>
+
+<body>
+	<web3-wallet-portal></web3-wallet-portal>
+	<web3-wallet-portal origin="https://iframe-wallet.pages.dev/"></web3-wallet-portal>
+</body>
+
+<script>
+	const el = document.querySelector('my-element');
+	let portal = el.portal;
+	console.log('The portal accessor variable is', { portal });
+</script>
+```
+
+When this package is deployed to a website (reference deployment: `https://iframe-wallet.pages.dev/`) then the Wallet Portal can be accessed from this deployment via:
+
+https://iframe-wallet.pages.dev/components/es/Portal.min.js
+https://iframe-wallet.pages.dev/components/iife/Portal.min.js
+https://iframe-wallet.pages.dev/components/umd/Portal.min.js
+
+### Custom confirmation components
+
 To add a (Svelte) confirmation Components to a crypto method handler:
 
 ```js

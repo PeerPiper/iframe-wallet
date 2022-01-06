@@ -1,6 +1,6 @@
 import * as CONSTANTS from './constants';
 import mod from '../wasm/wallet/wasm_code_bg.wasm';
-import { browser } from '$app/env';
+const browser = () => ![typeof window, typeof document].includes('undefined');
 // import plugins
 import { ed25519 } from './ed25519';
 import './rsa';
@@ -40,7 +40,7 @@ export let handlers = {
             return new Error('Host not set. Run setHost($page.host) first.');
         wasmWallet = await import('../wasm/wallet/wasm_code');
         await initModule(mod, wasmWallet.default);
-        ed25519.setWasmWallet(wasmWallet);
+        ed25519.setWasmWallet(wasmWallet, handlers.getPublicKey);
         return { status: CONSTANTS.INITIALIZED };
     },
     setConfig: (key, value) => {

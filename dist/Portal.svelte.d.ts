@@ -5,6 +5,8 @@ declare const __propDef: {
         origin: any;
     };
     events: {
+        connected: CustomEvent<any>;
+    } & {
         [evt: string]: CustomEvent<any>;
     };
     slots: {};

@@ -1,5 +1,5 @@
 export declare const ed25519: {
-    setWasmWallet: (w: any) => void;
+    setWasmWallet: (w: any, publicKeyGetter: any) => void;
     generateKeypair: () => Error | {
         publicKey: any;
         secretKey: any;

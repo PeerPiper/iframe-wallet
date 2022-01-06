@@ -1,4 +1,5 @@
-<script >import { onMount } from 'svelte';
+<!-- <svelte:options tag="web3-wallet-portal" /> -->
+<script >import { onMount, createEventDispatcher } from 'svelte';
 import IFrameComp from './IFrame.svelte';
 import * as CONSTANTS from './handlers/constants';
 import { config, remote } from './remote-rpc';
@@ -6,6 +7,7 @@ import Controller from './Controller.svelte';
 // export let encrypt;
 export let portal; // allow users to bind to the portal
 export let origin; // allow users to set the origin default
+const dispatch = createEventDispatcher();
 let portalLoaded = false;
 let iframe;
 let connected;
@@ -30,6 +32,7 @@ $: if (connected) {
     // only expose the fully aggregated API on connect, so consumers know when it's ready
     // but we can use the aggregated internally until then
     portal = aggregated;
+    dispatch('connected', 'portal loaded'); // so listeners can tell when the portal can be used
 }
 // Wait for the iframe to load, then configure it
 const handleLoad = async () => {

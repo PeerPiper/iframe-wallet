@@ -1,5 +1,5 @@
 export declare const arweaveWalletAPI: {
-    generateJWK: () => Promise<any>;
+    generateJWK: () => Promise<JWKInterface>;
     connect(permissions: PermissionType[], appInfo?: {
         name?: string;
         logo?: string;
@@ -26,7 +26,7 @@ export declare const arweaveWalletAPI: {
         salt?: string;
     }): Promise<string>;
     signature(data: Uint8Array, algorithm: any): Promise<string>;
-    noop(): any;
+    noop(): bool;
 };
 declare global {
     interface Window {
