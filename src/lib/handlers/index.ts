@@ -122,7 +122,7 @@ export let handlers: { [Key: string]: Function } = {
 		return pre_name;
 	},
 
-	importKeypairs: (imports: Array) => {
+	importKeypairs: (imports: { kid: string; crv: string; kty: string }[]) => {
 		// TODO password protect
 		// foreach keypair, sort by key type (RSA, ed25519) and laod 'em up'
 		imports.forEach((imported) => {
