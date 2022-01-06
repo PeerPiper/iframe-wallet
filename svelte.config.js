@@ -21,14 +21,16 @@ const config = {
 		// hydrate the <div id="svelte"> element in src/app.html
 		target: '#svelte',
 		vite: () => ({
-			// build: {
-			// 	lib: {
-			// 		entry: path.resolve(__dirname, 'src/lib/index.js'),
-			// 		name: 'iframe-wallet',
-			// 		formats: ['es']
-			// 		// fileName: (format) => `iframe-wallet.${format}.js`
-			// 	}
-			// },
+			build: {
+				rollupOptions: {}
+				// https://vitejs.dev/guide/build.html#library-mode
+				// lib: {
+				//  entry: path.resolve(__dirname, 'src/lib/index.js'),
+				// 	name: 'portal',
+				//  formats: ['es']
+				//  fileName: (format) => `iframe-wallet.${format}.js`
+				// }
+			},
 			server: {
 				fs: {
 					// Allow serving files from levels up to the project root
@@ -41,9 +43,13 @@ const config = {
 			exports: (filepath) => {
 				if (filepath.endsWith('.d.ts')) return false;
 				if (filepath == 'index.js') return true;
-				return mm.isMatch(filepath, ['App.svelte', 'Portal.svelte']);
+				return mm.isMatch(filepath, ['!**/_*', '!**/internal/**']);
+				// return mm.isMatch(filepath, ['App.svelte', 'Portal.svelte']);
 			},
 			files: mm.matcher('!**/build.*')
+		},
+		serviceWorker: {
+			register: false
 		},
 		// adapter: staticIPFSAdapter({
 		// 	removeBuiltInServiceWorkerRegistration: true,
